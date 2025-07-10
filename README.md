@@ -139,10 +139,29 @@ case CMD_SET_CHASSIS_VEL:
 
 ```mermaid
 graph TD
-    VxVyW["(vx, vy, ω) 指令"] -->|解析| FSM_ActionParser
-    FSM_ActionParser -->|写共享变量| ChassisCtrl
-    ChassisCtrl -->|运动学映射| WheelPID
-    WheelPID -->|PWM| Motors
+  %% ========= 上位机链 =========
+  UI["前端\n(网页 / App)"] -->|JSON| PC["上位机 PC"]
+  PC -->|USB / Wi-Fi| ESP["ESP32\n(通信桥)"]
+
+  %% ========= 车上控制板 =========
+  ESP --> STM["STM32\n电机大脑"]
+  STM -->|解析\nvx·vy·ω| SOLVER["速度换算\n→ 4 轮目标 rpm"]
+  SOLVER --> LOOP["闭环循环\n(1 kHz)"]
+
+  LOOP -->|PWM| M1["电机 1"]
+  LOOP -->|PWM| M2["电机 2"]
+  LOOP -->|PWM| M3["电机 3"]
+  LOOP -->|PWM| M4["电机 4"]
+
+  M1 -->|编码器 rpm| LOOP
+  M2 -->|编码器 rpm| LOOP
+  M3 -->|编码器 rpm| LOOP
+  M4 -->|编码器 rpm| LOOP
+
+  %% ========= 回传日志 =========
+  LOOP -->|实测轮速 JSON| ESP
+  ESP  --> PC
+  PC   -->|绘图 / 记录| UI
 ```
 
 ---

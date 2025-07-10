@@ -339,12 +339,8 @@ void FSM_ExecuteAction(const Action* action)
             FSM_HW_StopAllMotors();
             break;
             
-        case CMD_MOVE_CM:
-            FSM_HW_MoveDistance(action->move.dist, action->move.spd);
-            break;
-            
-        case CMD_TURN_DEG:
-            FSM_HW_Turn(action->turn.angle, action->turn.spd);
+        case CMD_SET_CHASSIS_VEL:
+            FSM_HW_SetChassisVelocity(action->chassis.vx, action->chassis.vy, action->chassis.w);
             break;
             
         case CMD_SET_MOTOR_RAW:

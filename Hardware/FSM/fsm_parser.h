@@ -46,14 +46,14 @@ typedef enum {
 /* 动作命令 */
 typedef enum {
     CMD_STOP_ALL = 0,
-    CMD_MOVE_CM,
-    CMD_TURN_DEG,
-    CMD_SET_MOTOR_RAW,
-    CMD_SET_LED,
-    CMD_OLED_TEXT,
-    CMD_NRF_SEND,
-    CMD_BEEP,
-    CMD_OLED_EMOJI
+    // 保留1、2编号以向后兼容，但不再使用
+    CMD_SET_MOTOR_RAW = 3,
+    CMD_SET_LED = 4,
+    CMD_OLED_TEXT = 5,
+    CMD_NRF_SEND = 6,
+    CMD_BEEP = 7,
+    CMD_OLED_EMOJI = 8,
+    CMD_SET_CHASSIS_VEL = 9
 } CommandType;
 
 /* 表情类型 */
@@ -152,6 +152,12 @@ typedef struct {
         struct {                 // CMD_OLED_EMOJI
             EmojiType name;
         } emoji;
+        
+        struct {                 // CMD_SET_CHASSIS_VEL
+            float vx;
+            float vy;
+            float w;
+        } chassis;
     };
     u8 async;                    // 是否异步执行
     u8 completed;                // 是否已完成
