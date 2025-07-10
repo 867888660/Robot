@@ -1,41 +1,42 @@
-# STM32机器人状态机框架
+# STM32 机器人状态机框架（vx · vy · ω 版）
 
-基于JSON规则的STM32机器人控制系统，实现了可配置的状态机逻辑，支持多种传感器和动作执行。
+---
 
-## 项目结构
+## 1 概述
 
-```
+基于 **JSON 规则** 的灵活状态机，所有底盘运动统一为三自由度速度向量 **(vx, vy, ω)**，其余架构保持向后兼容。
+
+---
+
+## 2 目录结构
+
+```text
 robot/
-  ├── HARDWARE/
-  │   ├── FSM/                   # 状态机硬件抽象层
-  │   │   ├── fsm_parser.h       # 状态机解析器头文件
-  │   │   ├── fsm_parser.c       # 状态机解析器实现
-  │   │   ├── fsm_hardware.h     # 硬件抽象层头文件
-  │   │   └── fsm_hardware.c     # 硬件抽象层实现
-  │   └── ...                    # 其他硬件模块
-  ├── APP/
-  │   └── Control/
-  │       ├── fsm_control.h      # 状态机控制接口头文件
-  │       └── fsm_control.c      # 状态机控制接口实现
-  └── USER/
-      ├── main.c                 # 主程序入口
-      └── ...                    # 其他用户文件
+├── HARDWARE/
+│   ├── FSM/                    # 状态机硬件抽象层
+│   │   ├── fsm_parser.{h,c}    # 规则解析
+│   │   ├── fsm_hardware.{h,c}  # 驱动适配
+│   └── …                      # 其他硬件
+├── APP/
+│   └── Control/
+│       ├── fsm_control.{h,c}   # 状态机调度
+└── USER/
+    └── main.c                 # 入口
 ```
 
-## 功能特点
+---
 
-- **基于JSON的规则配置**：通过JSON格式定义状态转换规则、条件和动作
-- **优先级抢占机制**：高优先级规则可以抢占低优先级规则
-- **多传感器支持**：支持超声波、MPU6050、红外线等多种传感器
-- **多种动作执行**：支持电机控制、LED控制、OLED显示等
-- **状态报告机制**：定期发送心跳、事件和动作报告
-- **异步动作支持**：支持同步和异步动作执行
+## 3 关键特性
 
-## 状态机规则格式
+* **JSON 配置**：热加载状态/动作/条件。
+* **三自由度底盘**：单一命令 `SET_CHASSIS_VEL` 即可完成所有移动；路径规划留给上位机。
+* **抢占优先级**、**多传感器融合**、**异步动作**、**事件上报** —— 与旧版一致。
 
-状态机规则使用JSON格式定义，包含以下主要字段：
+---
 
-```json
+## 4 JSON 规则核心
+
+```jsonc
 {
   "script_ver": "YYYY-MM-DD-tag",
   "transitions": [
@@ -43,8 +44,11 @@ robot/
       "id": "RULE_ID",
       "priority": 100,
       "state_in": [1, 3],
-      "when": {"sensor":"SNR", "cmp":"<", "value":10},
-      "actions": [{"cmd":0}, {"cmd":8, "name":"SAD"}],
+      "when": {"sensor": "SNR", "cmp": "<", "value": 10},
+      "actions": [
+        {"cmd": 9, "vx": 0, "vy": 0, "w": 0},
+        {"cmd": 8, "name": "SAD"}
+      ],
       "state_out": 2,
       "note": "说明文字"
     }
@@ -52,220 +56,106 @@ robot/
 }
 ```
 
-### 字段说明
+*条件表达式* 仍沿用原有原子 / 组合语法。
 
-- **id**: 规则唯一标识符
-- **priority**: 优先级（0-255，越大越优先）
-- **state_in**: 触发前所处状态数组
-- **when**: 条件表达式
-- **actions**: 动作数组
-- **state_out**: 执行后的新状态
-- **note**: 备注（可选）
+---
 
-### 条件表达式
+## 5 动作命令
 
-条件表达式支持原子条件和组合条件：
+| cmd   | 名称                | 主要参数        | 说明                     |
+| ----- | ----------------- | ----------- | ---------------------- |
+| **9** | SET\_CHASSIS\_VEL | vx, vy, w   | 三自由度速度 (m/s, rad/s)    |
+| **0** | STOP\_ALL         | –           | 硬急停；= `9(0,0,0)` 但保留冗余 |
+| **3** | SET\_MOTOR\_RAW   | m1‑m4       | 直通 PWM（调试用）            |
+| 4     | SET\_LED          | r,g,b,count | RGB 灯                  |
+| 5     | OLED\_TEXT        | text        | 文本显示                   |
+| 6     | NRF\_SEND         | data        | 2.4 GHz 发送             |
+| 7     | BEEP              | ms          | 蜂鸣器                    |
+| 8     | OLED\_EMOJI       | name        | 表情                     |
 
-#### 原子条件
-```json
-{"sensor":"SNR", "cmp":"<", "value":10}
+> 旧版基于里程 / 角度的 `MOVE_CM`, `TURN_DEG` **已淘汰**。
+
+---
+
+## 6 状态报告
+
+* 心跳 **HB**、事件 **EV**、动作 **AC**、警报 **AL** —— 协议不变。
+* 当 `cmd = 9` 时，`AC` 追加 `vx / vy / w` 字段反馈。
+
+---
+
+## 7 软硬件集成
+
+### 7.1 硬件接入
+
+```mermaid
+graph TD
+    Sensors -->|数据| FSM_Parser
+    FSM_Parser -->|动作| APP_Control
+    APP_Control -->|PWM / 指令| Drivers
+    Drivers --> Actuators
 ```
 
-#### 组合条件
-```json
-{"op":"AND", "conds":[
-  {"sensor":"SNR", "cmp":"<", "value":10},
-  {"sensor":"BAT", "cmp":">", "value":20}
-]}
-```
-
-### 动作命令
-
-| cmd | 名称 | 主要参数 | 说明 |
-|-----|------|---------|------|
-| 0 | STOP_ALL | - | 停止全部电机 |
-| 1 | MOVE_CM | dist, spd | 前/后移动 |
-| 2 | TURN_DEG | angle, spd | 原地转向 |
-| 3 | SET_MOTOR_RAW | m1..m4 | 直接PWM控制 |
-| 4 | SET_LED | r, g, b, count | WS2812B设色 |
-| 5 | OLED_TEXT | text | OLED显示文本 |
-| 6 | NRF_SEND | data | 2.4GHz发送数据 |
-| 7 | BEEP | ms | 蜂鸣器控制 |
-| 8 | OLED_EMOJI | name | OLED显示表情 |
-
-## 状态报告格式
-
-### 心跳报告 (HB)
-```json
-{
-  "type": "HB",
-  "seq": 6152,
-  "tick": 23145678,
-  "state": 1,
-  "battery": 86,
-  "cpu": 24,
-  "queue": 2
-}
-```
-
-### 事件报告 (EV)
-```json
-{
-  "type": "EV",
-  "seq": 6153,
-  "event_id": "STOP_BY_SONAR",
-  "state_in": 1,
-  "state_out": 2,
-  "cause": {
-    "SNR": 8.6
-  },
-  "ts": 23145702
-}
-```
-
-### 动作报告 (AC)
-```json
-{
-  "type": "AC",
-  "seq": 6154,
-  "seq_id": 0x1A3F,
-  "cmd": 0,
-  "result": "OK",
-  "t_start": 23145703,
-  "t_end": 23146135,
-  "delta": {
-    "wheel_pwm_ms": 430,
-    "dist_cm": 0.0
-  }
-}
-```
-
-### 警报 (AL)
-```json
-{
-  "type": "AL",
-  "seq": 6155,
-  "alert_code": "LOW_BATT",
-  "detail": {"battery": 14},
-  "ts": 23146200
-}
-```
-
-## 使用方法
-
-### 1. 硬件集成
-
-1. 将`fsm_parser.h/c`和`fsm_hardware.h/c`文件添加到HARDWARE/FSM目录
-2. 将`fsm_control.h/c`文件添加到APP/Control目录
-3. 修改`fsm_hardware.c`中的硬件接口函数，适配您的具体硬件
-
-### 2. 软件集成
-
-在`main.c`中添加以下代码：
+### 7.2 软件接口
 
 ```c
-#include "fsm_control.h"
+// 在 fsm_control.c
+case CMD_SET_CHASSIS_VEL:
+    Chassis_SetVelocity(act->vx, act->vy, act->w);
+    break;
+```
 
-int main(void)
+---
+
+## 8 示例：避障小车
+
+```jsonc
 {
-    // 初始化系统
-    SystemInit();
-    
-    // 初始化状态机
-    FSM_Init();
-    
-    // 加载默认规则（可选）
-    FSM_LoadDefaultRules();
-    
-    // 主循环
-    while(1)
+  "script_ver": "2025-07-09-simple",
+  "transitions": [
     {
-        // 更新传感器数据
-        FSM_UpdateSensors();
-        
-        // 运行状态机
-        FSM_Update();
-        
-        // 延时
-        delay_ms(10);
+      "id": "STOP_BY_SONAR",
+      "priority": 100,
+      "state_in": [1],
+      "when": {"sensor": "SNR", "cmp": "<", "value": 15},
+      "actions": [{"cmd": 9, "vx": 0, "vy": 0, "w": 0}],
+      "state_out": 2
+    },
+    {
+      "id": "NORMAL_MOVE",
+      "priority": 10,
+      "state_in": [2],
+      "when": {"op": "TRUE"},
+      "actions": [{"cmd": 9, "vx": 0.3, "vy": 0.0, "w": 0.0, "async": true}],
+      "state_out": 2
     }
-}
-```
-
-### 3. 发送规则
-
-通过串口向STM32发送JSON格式的规则：
-
-```
-{
-  "script_ver":"2025-07-05-alpha3",
-  "transitions":[
-    { "id":"STOP_BY_SONAR","priority":100,"state_in":[1,3],
-      "when":{"sensor":"SNR","cmp":"<","value":10},
-      "actions":[{"cmd":0},{"cmd":8,"name":"SAD"}],
-      "state_out":2,"note":"急停+显示悲伤表情" }
   ]
 }
 ```
 
-## 注意事项
+---
 
-1. **内存管理**：状态机使用动态内存分配，请确保有足够的堆空间
-2. **JSON解析**：建议使用cJSON库进行完整解析
-3. **传感器校准**：使用前请校准各传感器
-4. **优先级设置**：安全相关规则应设置高优先级（100以上）
-5. **异步动作**：异步动作不会阻塞状态机，但可能导致动作重叠
+## 9 动作数据流
 
-## 示例应用
-
-### 避障小车
-
-```json
-{
-  "transitions":[
-    { "id":"STOP_BY_SONAR","priority":100,"state_in":[1],
-      "when":{"sensor":"SNR","cmp":"<","value":15},
-      "actions":[{"cmd":0},{"cmd":2,"angle":-90,"spd":150},{"cmd":1,"dist":20,"spd":150}],
-      "state_out":1 },
-    { "id":"NORMAL_MOVE","priority":10,"state_in":[1],
-      "when":{"op":"TRUE"},
-      "actions":[{"cmd":1,"dist":5,"spd":150,"async":true}],
-      "state_out":1 }
-  ]
-}
+```mermaid
+graph TD
+    VxVyW["(vx, vy, ω) 指令"] -->|解析| FSM_ActionParser
+    FSM_ActionParser -->|写共享变量| ChassisCtrl
+    ChassisCtrl -->|运动学映射| WheelPID
+    WheelPID -->|PWM| Motors
 ```
 
-### 巡线小车
+---
 
-```json
-{
-  "transitions":[
-    { "id":"FOLLOW_LINE","priority":80,"state_in":[1],
-      "when":{"sensor":"IR_LINE","cmp":"==","value":"BLACK"},
-      "actions":[{"cmd":1,"dist":2,"spd":120}],
-      "state_out":1 },
-    { "id":"FIND_LINE","priority":50,"state_in":[1],
-      "when":{"sensor":"IR_LINE","cmp":"==","value":"WHITE"},
-      "actions":[{"cmd":2,"angle":10,"spd":100},{"cmd":1,"dist":1,"spd":100}],
-      "state_out":1 }
-  ]
-}
-```
+## 10 扩展指引
 
-## 扩展开发
+* **切换参考系**：在 `SET_CHASSIS_VEL` 增加 `mode` 字段（如 `field` / `body`）。
+* **新增动作**：
 
-### 添加新传感器
+  1. 在 `fsm_parser.{h,c}` 登记 `cmd` 常量。
+  2. 在 `fsm_control.c` 添加处理分支。
+  3. 在 `fsm_hardware.c` 实现底层逻辑。
 
-1. 在`fsm_parser.h`中的`SensorType`枚举中添加新传感器类型
-2. 在`fsm_hardware.c`中实现传感器读取函数
-3. 在`fsm_control.c`的`FSM_UpdateSensors()`中调用读取函数
+---
 
-### 添加新动作
-
-1. 在`fsm_parser.h`中的`CommandType`枚举中添加新动作类型
-2. 在`fsm_parser.c`中实现动作执行函数
-3. 在`FSM_ExecuteAction()`中添加对应的case分支
-
-## 许可证
-
-MIT License 
+MIT License
