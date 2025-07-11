@@ -1,130 +1,132 @@
+#include "control_mode.h"
+#include "control.h"        // Legacy
+#include "fsm_control.h"    // JSON-FSM
 #include "joystick.h"
 
 
-u16 ADC_Data[2];//ADCÊı¾İ´æ´¢
-
+u16 ADC_Data[2]; // ADC æ•°æ®å­˜å‚¨
 
 /**************************************************
-º¯ÊıÃû³Æ£ºJoyStick_ADC_Init()
-º¯Êı¹¦ÄÜ£ºÒ¡¸ËADC³õÊ¼»¯º¯Êı
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+å‡½æ•°åç§°ï¼šJoyStick_ADC_Init
+å‡½æ•°åŠŸèƒ½ï¼šåˆå§‹åŒ–æ‘‡æ† ADCï¼ˆDMA + è¿ç»­è½¬æ¢ï¼‰
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šæ— 
 ***************************************************/
 void JoyStick_ADC_Init(void)
 {
-	GPIO_InitTypeDef GPIO_InitStructure;//¶¨ÒåÒ»¸öGPIO_InitTypeDefÀàĞÍµÄ½á¹¹Ìå
+	GPIO_InitTypeDef GPIO_InitStructure;//Ò»GPIO_InitTypeDefÍµÄ½á¹¹
 	ADC_InitTypeDef ADC_InitStructure;
 	
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);//¿ªÆôGPIO¶Ë¿ÚÊ±ÖÓ
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);//¿ªÆôADC1Ê±ÖÓ
-	RCC_ADCCLKConfig(RCC_PCLK2_Div6);   //ÉèÖÃADC·ÖÆµÒò×Ó6 72M/6=12,ADC×î´óÊ±¼ä²»ÄÜ³¬¹ı14M
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);//GPIOË¿Ê±
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);//ADC1Ê±
+	RCC_ADCCLKConfig(RCC_PCLK2_Div6);   //ADCÆµ6 72M/6=12,ADCÊ±ä²»Ü³14M
 	
 	
 	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_0|GPIO_Pin_1; //PA0~PA1
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AIN;//Ä£ÄâÊäÈë
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AIN;//Ä£
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	
 	
-	ADC_InitStructure.ADC_Mode=ADC_Mode_Independent;//Ö»Ê¹ÓÃÒ»¸öADC,²ÉÓÃ¶ÀÁ¢Ä£Ê½
-	ADC_InitStructure.ADC_ScanConvMode=ENABLE;//É¨ÃèÄ£Ê½
-	ADC_InitStructure.ADC_ContinuousConvMode=ENABLE;//Á¬Ğø×ª»»Ä£Ê½
-	ADC_InitStructure.ADC_ExternalTrigConv=ADC_ExternalTrigConv_None;//²»ÓÃÍâ²¿´¥·¢
-	ADC_InitStructure.ADC_DataAlign=ADC_DataAlign_Right;//×ª»»½á¹ûÓÒ¶ÔÆë
-	ADC_InitStructure.ADC_NbrOfChannel=2;//×ª»»Í¨µÀ2¸ö
-	ADC_Init(ADC1,&ADC_InitStructure);//³õÊ¼»¯ADC
+	ADC_InitStructure.ADC_Mode=ADC_Mode_Independent;//Ö»Ê¹Ò»ADC,Ã¶Ä£Ê½
+	ADC_InitStructure.ADC_ScanConvMode=ENABLE;//É¨Ä£Ê½
+	ADC_InitStructure.ADC_ContinuousConvMode=ENABLE;//×ªÄ£Ê½
+	ADC_InitStructure.ADC_ExternalTrigConv=ADC_ExternalTrigConv_None;//â²¿
+	ADC_InitStructure.ADC_DataAlign=ADC_DataAlign_Right;//×ªÒ¶
+	ADC_InitStructure.ADC_NbrOfChannel=2;//×ªÍ¨2
+	ADC_Init(ADC1,&ADC_InitStructure);//Ê¼ADC
 	
 	ADC_Cmd(ADC1,ENABLE);
 	
 	ADC_DMACmd(ADC1, ENABLE);
 	
-	ADC_ResetCalibration(ADC1);//³õÊ¼»¯ADCĞ£×¼¼Ä´æÆ÷ 
+	ADC_ResetCalibration(ADC1);//Ê¼ADCĞ£×¼Ä´ 
 	
 	ADC_RegularChannelConfig(ADC1,ADC_Channel_0, 1, ADC_SampleTime_239Cycles5 );
   ADC_RegularChannelConfig(ADC1,ADC_Channel_1, 1, ADC_SampleTime_239Cycles5 );		
 	
-	while(ADC_GetResetCalibrationStatus(ADC1));//µÈ´ıADCĞ£×¼¼Ä´æÆ÷³õÊ¼»¯Íê³É
+	while(ADC_GetResetCalibrationStatus(ADC1));//È´ADCĞ£×¼Ä´Ê¼
 	
-	ADC_StartCalibration(ADC1);	 //¿ªÆôADCĞ£×¼
+	ADC_StartCalibration(ADC1);	 //ADCĞ£×¼
  
-	while(ADC_GetCalibrationStatus(ADC1));	 //µÈ´ıĞ£×¼½áÊø
+	while(ADC_GetCalibrationStatus(ADC1));	 //È´Ğ£×¼
 	
-	ADC_SoftwareStartConvCmd(ADC1, ENABLE);//Ã»ÓĞ²ÉÓÃÍâ²¿´¥·¢£¬Ê¹ÓÃÈí¼ş´¥·¢
+	ADC_SoftwareStartConvCmd(ADC1, ENABLE);//Ã»Ğ²â²¿Ê¹
 	
 }
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºJoyStick_DMA_Init()
-º¯Êı¹¦ÄÜ£ºÒ¡¸ËÊı¾İÍ¨¹ıDMA´«Êä
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+Æ£JoyStick_DMA_Init()
+Ü£Ò¡Í¨DMA
+Ú²
+Ø²
 ***************************************************/
 void JoyStick_DMA_Init(void)
 {
 	DMA_InitTypeDef DMA_InitStructure;
 	
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1,ENABLE);//¿ªÆôDMAÊ±ÖÓ
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1,ENABLE);//DMAÊ±
 	
 	DMA_DeInit(DMA1_Channel1);
-	DMA_InitStructure.DMA_PeripheralBaseAddr=(uint32_t)&(ADC1->DR);//Ô´Êı¾İµØÖ·,¿´³ÉÍâÉè
-	DMA_InitStructure.DMA_MemoryBaseAddr=(uint32_t)&ADC_Data;//Ä¿±êµØÖ·,Ò»¸ö¿ÕÊı×é
-	DMA_InitStructure.DMA_DIR=DMA_DIR_PeripheralSRC;//·½Ïò:´æ´¢Æ÷(ÍâÉè)µ½´æ´¢Æ÷
-	DMA_InitStructure.DMA_BufferSize=2;//´«Êä´óĞ¡
-	DMA_InitStructure.DMA_PeripheralInc=DMA_PeripheralInc_Disable;//ÍâÉèµØÖ·²»µİÔö£¬ÍâÉèµØÖ·Ö»ÓĞÒ»¸ö
-	DMA_InitStructure.DMA_MemoryInc=DMA_MemoryInc_Enable;//ÄÚ´æµØÖ·µİÔö
-	DMA_InitStructure.DMA_PeripheralDataSize=DMA_PeripheralDataSize_HalfWord;//ÍâÉèÊı¾İµ¥Î»
-	DMA_InitStructure.DMA_MemoryDataSize=DMA_MemoryDataSize_HalfWord;//ÄÚ´æÊı¾İµ¥Î»
-	DMA_InitStructure.DMA_Mode=DMA_Mode_Circular;//DMAÄ£Ê½£¬Ò»´ÎNormal£¬Ñ­»·Circular
+	DMA_InitStructure.DMA_PeripheralBaseAddr=(uint32_t)&(ADC1->DR);//Ô´İµÖ·,
+	DMA_InitStructure.DMA_MemoryBaseAddr=(uint32_t)&ADC_Data;//Ä¿Ö·,Ò»
+	DMA_InitStructure.DMA_DIR=DMA_DIR_PeripheralSRC;//:æ´¢()æ´¢
+	DMA_InitStructure.DMA_BufferSize=2;//Ğ¡
+	DMA_InitStructure.DMA_PeripheralInc=DMA_PeripheralInc_Disable;//Ö·Ö·Ö»Ò»
+	DMA_InitStructure.DMA_MemoryInc=DMA_MemoryInc_Enable;//ï¿½Ú´ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½
+	DMA_InitStructure.DMA_PeripheralDataSize=DMA_PeripheralDataSize_HalfWord;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İµï¿½Î»
+	DMA_InitStructure.DMA_MemoryDataSize=DMA_MemoryDataSize_HalfWord;//ï¿½Ú´ï¿½ï¿½ï¿½ï¿½İµï¿½Î»
+	DMA_InitStructure.DMA_Mode=DMA_Mode_Circular;//DMAÄ£Ê½ï¿½ï¿½Ò»ï¿½ï¿½Normalï¿½ï¿½Ñ­ï¿½ï¿½Circular
 	
-	DMA_InitStructure.DMA_Priority=DMA_Priority_High;//ÓÅÏÈ¼¶:¸ß
-	DMA_InitStructure.DMA_M2M=DMA_M2M_Disable;//Ê¹ÄÜÄÚ´æµ½ÄÚ´æµÄ´«Êä
+	DMA_InitStructure.DMA_Priority=DMA_Priority_High;//ï¿½ï¿½ï¿½È¼ï¿½:ï¿½ï¿½
+	DMA_InitStructure.DMA_M2M=DMA_M2M_Disable;//Ê¹ï¿½ï¿½ï¿½Ú´æµ½ï¿½Ú´ï¿½Ä´ï¿½ï¿½ï¿½
 	
-	DMA_Init(DMA1_Channel1, &DMA_InitStructure); //ÅäÖÃDMAÍ¨µÀ
-	DMA_Cmd(DMA1_Channel1,ENABLE);//Ê¹ÄÜDMA
+	DMA_Init(DMA1_Channel1, &DMA_InitStructure); //ï¿½ï¿½ï¿½ï¿½DMAÍ¨ï¿½ï¿½
+	DMA_Cmd(DMA1_Channel1,ENABLE);//Ê¹ï¿½ï¿½DMA
 	
 }
 
 /**************************************************
-º¯ÊıÃû³Æ£ºJoyStick_Key_Init()
-º¯Êı¹¦ÄÜ£ºÒ¡¸Ë°´¼ü³õÊ¼»¯º¯Êı
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½JoyStick_Key_Init()
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½Ò¡ï¿½Ë°ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ***************************************************/
 void JoyStick_Key_Init(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
 	EXTI_InitTypeDef EXTI_InitStructure;
-  GPIO_InitTypeDef GPIO_InitStructure;                    //¶¨ÒåGPIO½á¹¹Ìå    
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);    //Ê¹ÄÜGPIOBÊ±ÖÓ  
+  GPIO_InitTypeDef GPIO_InitStructure;                    //ï¿½ï¿½ï¿½ï¿½GPIOï¿½á¹¹ï¿½ï¿½    
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);    //Ê¹ï¿½ï¿½GPIOBÊ±ï¿½ï¿½  
 
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;              //ÅäÖÃÒı½Å    
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;           //ÉÏÀ­ÊäÈë    
-  GPIO_Init(GPIOB,&GPIO_InitStructure);       //³õÊ¼»¯GPIOB
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;              //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½    
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;           //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½    
+  GPIO_Init(GPIOB,&GPIO_InitStructure);       //ï¿½ï¿½Ê¼ï¿½ï¿½GPIOB
 	
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB,GPIO_PinSource0); //ÅäÖÃGPIOÎªÖĞ¶ÏÒı½Å
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB,GPIO_PinSource0); //ï¿½ï¿½ï¿½ï¿½GPIOÎªï¿½Ğ¶ï¿½ï¿½ï¿½ï¿½ï¿½
 	
-	EXTI_InitStructure.EXTI_Line=EXTI_Line0;						//ÖĞ¶ÏÏß0
-	EXTI_InitStructure.EXTI_Mode=EXTI_Mode_Interrupt;		//ÖĞ¶ÏÄ£Ê½
-	EXTI_InitStructure.EXTI_Trigger=EXTI_Trigger_Falling;//ÏÂ½µÑØ´¥·¢
-	EXTI_InitStructure.EXTI_LineCmd=ENABLE;          		//Ê¹ÄÜÖĞ¶Ï
+	EXTI_InitStructure.EXTI_Line=EXTI_Line0;						//ï¿½Ğ¶ï¿½ï¿½ï¿½0
+	EXTI_InitStructure.EXTI_Mode=EXTI_Mode_Interrupt;		//ï¿½Ğ¶ï¿½Ä£Ê½
+	EXTI_InitStructure.EXTI_Trigger=EXTI_Trigger_Falling;//ï¿½Â½ï¿½ï¿½Ø´ï¿½ï¿½ï¿½
+	EXTI_InitStructure.EXTI_LineCmd=ENABLE;          		//Ê¹ï¿½ï¿½ï¿½Ğ¶ï¿½
 	
 	EXTI_Init(&EXTI_InitStructure);
 	
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0 ;//ÇÀÕ¼ÓÅÏÈ¼¶0
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;			//×ÓÓÅÏÈ¼¶1
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;					//IRQÍ¨µÀÊ¹ÄÜ
-	NVIC_Init(&NVIC_InitStructure);	                        //³õÊ¼»¯NVIC¼Ä´æÆ÷
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0 ;//ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½È¼ï¿½0
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;			//ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½1
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;					//IRQÍ¨ï¿½ï¿½Ê¹ï¿½ï¿½
+	NVIC_Init(&NVIC_InitStructure);	                        //ï¿½ï¿½Ê¼ï¿½ï¿½NVICï¿½Ä´ï¿½ï¿½ï¿½
 
 
 }
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºJoyStick_Init()
-º¯Êı¹¦ÄÜ£ºÒ¡¸Ë³õÊ¼»¯º¯Êı
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½JoyStick_Init()
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½Ò¡ï¿½Ë³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ***************************************************/
 void JoyStick_Init(void)
 {
@@ -135,12 +137,12 @@ void JoyStick_Init(void)
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºEXTI0_IRQHandler(void)
-º¯Êı¹¦ÄÜ£ºÍâ²¿ÖĞ¶Ï0º¯Êı
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½EXTI0_IRQHandler(void)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½ï¿½â²¿ï¿½Ğ¶ï¿½0ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ***************************************************/
-void EXTI0_IRQHandler(void)//ÖĞ¶Ï·şÎñº¯Êı
+void EXTI0_IRQHandler(void)//ï¿½Ğ¶Ï·ï¿½ï¿½ï¿½ï¿½ï¿½
 {
 	if(EXTI_GetITStatus(EXTI_Line0)!=RESET)
 	{
@@ -150,11 +152,11 @@ void EXTI0_IRQHandler(void)//ÖĞ¶Ï·şÎñº¯Êı
 }
 
 /**************************************************
-º¯ÊıÃû³Æ£ºJoyStick_Key_Scan(int mode)
-º¯Êı¹¦ÄÜ£ºÒ¡¸Ë°´¼üÉ¨Ãèº¯Êı
-Èë¿Ú²ÎÊı£ºmode 0 ²»Ö§³ÖÁ¬Ğø°´  1 Ö§³ÖÁ¬Ğø°´
-·µ»Ø²ÎÊı£º1 °´¼ü°´ÏÂ
-          0 °´¼üÃ»ÓĞ°´ÏÂ
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½JoyStick_Key_Scan(int mode)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½Ò¡ï¿½Ë°ï¿½ï¿½ï¿½É¨ï¿½èº¯ï¿½ï¿½
+ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½mode 0 ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  1 Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+          0 ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Ğ°ï¿½ï¿½ï¿½
 ***************************************************/
 int JoyStick_Key_Scan(int mode)
 {
@@ -174,10 +176,10 @@ int JoyStick_Key_Scan(int mode)
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºJoyStick_Text()
-º¯Êı¹¦ÄÜ£ºÒ¡¸Ë²âÊÔº¯Êı
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½JoyStick_Text()
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü£ï¿½Ò¡ï¿½Ë²ï¿½ï¿½Ôºï¿½ï¿½ï¿½
+ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ***************************************************/
 void JoyStick_Text()
 {
@@ -195,6 +197,60 @@ void JoyStick_Text()
 		printf("\r\n");
 		delay_ms(500);
 }
+
+
+static uint32_t start_press_tick = 0;
+static uint8_t  in_switch_mode   = 0;
+static uint8_t  last_start_key   = 0;
+
+void JoyStick_Process(void)
+{
+    uint8_t start_key = KEY_START;   // é«˜ç”µå¹³ = æ¾å¼€ï¼ˆå–å†³äºä¸Šæ‹‰/ä¸‹æ‹‰ï¼‰
+    uint16_t rx = ADC_Data[0];       // å³æ‘‡æ† X
+    uint16_t ry = ADC_Data[1];       // å³æ‘‡æ† Y
+
+    // ---------- 1. æ£€æµ‹é•¿æŒ‰ ----------
+    if(!start_key && last_start_key) {                // åˆšæŒ‰ä¸‹
+        start_press_tick = millis();
+    }
+    if(!start_key && (millis() - start_press_tick > 1000)) {
+        in_switch_mode = 1;        // è¶…è¿‡ 1 s è¿›å…¥åˆ‡æ¢æ¨¡å¼
+    }
+
+    // ---------- 2. åˆ‡æ¢é€»è¾‘ ----------
+    static uint8_t last_dir = 0;
+    if(in_switch_mode) {
+        int dir = 0;   // +1 = ä¸Šï¼Œ-1 = ä¸‹
+        if(ry > 3500) dir = +1;      // æ ¹æ® ADC èŒƒå›´é˜ˆå€¼è°ƒæ•´
+        if(ry <  500) dir = -1;
+
+        if(dir != 0 && dir != last_dir) {   // è¾¹æ²¿æ£€æµ‹ï¼Œé˜²æŠ–
+            if(dir > 0) CtrlMode_Next();    // JSON â†’ Joystick â†’ â€¦
+            else        CtrlMode_Prev();
+        }
+        last_dir = dir;
+    }
+
+    // ---------- 3. é€€å‡º ----------
+    if(start_key && !last_start_key) {      // æ¾å¼€
+        in_switch_mode = 0;                 // é€€å‡ºå¹¶ä¿æŒå½“å‰æ¨¡å¼
+    }
+
+    last_start_key = start_key;
+}
+
+volatile CtrlMode g_ctrlMode = CTRL_MODE_JOYSTICK;
+
+void CtrlMode_Set(CtrlMode m)
+{
+    if(g_ctrlMode == m) return;
+    g_ctrlMode = m;
+    printf("CTRL MODE -> %s\r\n",
+          m == CTRL_MODE_JOYSTICK ? "JOYSTICK" : "JSON");
+}
+
+void CtrlMode_Next(void) { CtrlMode_Set((g_ctrlMode+1) % 2); }
+void CtrlMode_Prev(void) { CtrlMode_Set((g_ctrlMode+1) % 2); } // åªæœ‰ä¸¤æ¡£
 
 
 

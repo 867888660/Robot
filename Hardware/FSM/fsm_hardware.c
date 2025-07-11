@@ -87,6 +87,27 @@ void FSM_HW_SetMotorRaw(int16_t m1, int16_t m2, int16_t m3, int16_t m4)
     }
 }
 
+// 三自由度底盘速度控制 (vx, vy, ω)
+void FSM_HW_SetChassisVelocity(float vx, float vy, float w)
+{
+    /*
+     * 简化实现：仅根据 vx 方向控制前进/后退速度；
+     * vy、w 暂未使用。真实项目应根据麦克纳姆/全向轮运动学计算各轮 PWM。
+     */
+    int16_t pwm = (int16_t)(vx * 500); // 假设 vx ∈ [-1,1] m/s 对应 PWM [-500,500]
+    if(pwm > 500) pwm = 500;
+    if(pwm < -500) pwm = -500;
+
+    if(pwm > 0) {
+        forward(pwm);
+    } else if(pwm < 0) {
+        backward(-pwm);
+    } else {
+        Motion_State(OFF);
+    }
+    // TODO: vy 与 w 控制横移与旋转，可在此补充全向轮算法
+}
+
 // LED控制 - 设置RGB LED
 void FSM_HW_SetLED(u8 r, u8 g, u8 b, u8 count)
 {

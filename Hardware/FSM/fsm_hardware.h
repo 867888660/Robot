@@ -12,6 +12,9 @@ void FSM_HW_MoveDistance(int16_t dist_cm, u8 speed);
 void FSM_HW_Turn(int16_t angle_deg, u8 speed);
 void FSM_HW_SetMotorRaw(int16_t m1, int16_t m2, int16_t m3, int16_t m4);
 
+// 新增：三自由度底盘速度控制 (vx, vy, ω)
+void FSM_HW_SetChassisVelocity(float vx, float vy, float w);
+
 // LED控制
 void FSM_HW_SetLED(u8 r, u8 g, u8 b, u8 count);
 

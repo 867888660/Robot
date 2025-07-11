@@ -164,6 +164,19 @@ graph TD
   PC   -->|绘图 / 记录| UI
 ```
 
+在固件中，该链路由以下核心函数对应：
+
+| 链路节点 | 关键函数 | 文件 |
+| -------- | -------- | ---- |
+| ESP → STM | 串口接收缓冲 & FSM_ParseJSON | fsm_control.c |
+| 解析层 `vx·vy·ω` | Chassis_SetVelocity | APP/Control/chassis_solver.c |
+| 速度换算 | SolveAndDrive (内部 static) | 同上 |
+| PWM 输出 | FSM_HW_SetMotorRaw | Hardware/FSM/fsm_hardware.c |
+| 轮速采集 | *TODO* Encoder_ReadRPM | – |
+| JSON 回传 | FSM_Parser_SendHeartbeat / SendActionReport | Hardware/FSM/fsm_parser.c |
+
+> `Chassis_Loop_Update()` 建议在 1 kHz 定时中断调用，实现闭环控制。
+
 ---
 
 ## 10 扩展指引

@@ -1,6 +1,7 @@
 #include "fsm_parser.h"
 #include "fsm_hardware.h"
 #include "usart.h"
+#include "chassis_solver.h"
 
 // 全局状态机实例
 StateMachine g_fsm;
@@ -340,7 +341,7 @@ void FSM_ExecuteAction(const Action* action)
             break;
             
         case CMD_SET_CHASSIS_VEL:
-            FSM_HW_SetChassisVelocity(action->chassis.vx, action->chassis.vy, action->chassis.w);
+            Chassis_SetVelocity(action->chassis.vx, action->chassis.vy, action->chassis.w);
             break;
             
         case CMD_SET_MOTOR_RAW:
