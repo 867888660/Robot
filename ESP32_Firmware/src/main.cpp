@@ -170,27 +170,43 @@ void onWebSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t leng
     case WStype_TEXT:
       Serial.printf("[%u] 收到文本: %s\n", num, payload);
       
-      // 解析JSON
-      StaticJsonDocument<200> doc;
-      DeserializationError error = deserializeJson(doc, payload, length);
+      // 支持两种格式:
+      // 1. 简单CSV格式: "vx,vy,w"
+      // 2. JSON格式: {"cmd":"velocity","vx":0.5,"vy":0,"w":0}
       
-      if (!error) {
-        // 处理命令
-        const char* cmd = doc["cmd"];
+      // 先尝试CSV格式 (来自joystick.html)
+      float vx = 0, vy = 0, w = 0;
+      if (sscanf((const char*)payload, "%f,%f,%f", &vx, &vy, &w) == 3) {
+        // 成功解析CSV格式
+        String controlMsg = "{\"cmd\":\"velocity\",\"vx\":" + String(vx) + 
+                           ",\"vy\":" + String(vy) + 
+                           ",\"w\":" + String(w) + "}";
         
-        if (cmd && strcmp(cmd, "velocity") == 0) {
-          // 处理速度指令
-          float vx = doc["vx"];
-          float vy = doc["vy"];
-          float w = doc["w"];
+        // 使用通信管理类发送到STM32
+        stm32Comm.sendCommand(controlMsg);
+      }
+      else {
+        // 尝试JSON格式
+        StaticJsonDocument<200> doc;
+        DeserializationError error = deserializeJson(doc, payload, length);
+        
+        if (!error) {
+          // 处理命令
+          const char* cmd = doc["cmd"];
           
-          // 构建转发给STM32的JSON
-          String controlMsg = "{\"cmd\":\"velocity\",\"vx\":" + String(vx) + 
-                             ",\"vy\":" + String(vy) + 
-                             ",\"w\":" + String(w) + "}";
-          
-          // 使用通信管理类发送到STM32
-          stm32Comm.sendCommand(controlMsg);
+          if (cmd && strcmp(cmd, "velocity") == 0) {
+            // 处理速度指令
+            float vx = doc["vx"];
+            float vy = doc["vy"];
+            float w = doc["w"];
+            
+            // 构建转发给STM32的JSON
+            String controlMsg = "{\"cmd\":\"velocity\",\"vx\":" + String(vx) + 
+                               ",\"vy\":" + String(vy) + 
+                               ",\"w\":" + String(w) + "}";
+            
+            // 使用通信管理类发送到STM32
+            stm32Comm.sendCommand(controlMsg);
           
         } else if (cmd && strcmp(cmd, "getSystemInfo") == 0) {
           // 处理系统信息请求

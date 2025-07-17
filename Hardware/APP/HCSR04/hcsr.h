@@ -24,8 +24,7 @@
 
 void Hcsr04_NVIC(void);
 void Hcsr04_Init(void);
-static void OpenTimerForHc(void);//打开定时器4
-static void CloseTimerForHc(void);//关闭定时器4
+// 移除static函数声明，这些函数应该只在.c文件中定义
 u32 GetEchoTimer(void);//获取定时器4计数值
 float Hcsr04GetLength(void);//通过定时器4计数值计算距离
 

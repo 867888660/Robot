@@ -124,7 +124,8 @@ float Encoder_ReadRPM(u8 motor_id)
  */
 void Encoder_UpdateAll(void)
 {
-    u32 current_time = HAL_GetTick();
+    extern volatile u32 g_systick_ms; // 使用全局系统滴答计数器
+    u32 current_time = g_systick_ms;
     float time_diff_sec;
     s16 delta;
     
@@ -146,6 +147,11 @@ void Encoder_UpdateAll(void)
     
     // 更新电机2编码器计数 (TIM3 CH1/CH2)
     encoder_count[ENCODER_MOTOR_2] = tim3_cnt;
+    
+    // 暂时使用模拟数据更新电机3和电机4的编码器计数
+    // TODO: 实现全部4个编码器的读取
+    encoder_count[ENCODER_MOTOR_3] = encoder_count[ENCODER_MOTOR_1];
+    encoder_count[ENCODER_MOTOR_4] = encoder_count[ENCODER_MOTOR_2];
     
     // 计算每个电机的RPM
     for(u8 i = 0; i < ENCODER_MAX_NUM; i++) {
