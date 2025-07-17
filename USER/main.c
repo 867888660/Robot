@@ -6,6 +6,8 @@
 #include "esp32_wifi.h"  // 添加ESP32 WiFi头文件
 #include "esp32_http.h"  // 添加ESP32 HTTP头文件
 #include "esp32_captive_dns.h"  // 添加ESP32 Captive DNS头文件
+#include "encoder.h"     // 添加编码器头文件
+#include "chassis_solver.h"  // 添加底盘控制器头文件
 
 /****************************************************************************
 智能小车主控引脚说明
@@ -48,6 +50,9 @@ static u8 g_wifi_config_flag = 0;
 // 控制面板状态更新标志
 static u8 g_control_status_flag = 0;
 
+// 编码器更新标志
+static u8 g_update_encoders_flag = 0;
+
 // SysTick中断处理函数
 void SysTick_Handler(void)
 {
@@ -67,6 +72,9 @@ void SysTick_Handler(void)
     if(g_systick_ms % 1000 == 0) {
         g_control_status_flag = 1;
     }
+    
+    // 每1ms更新一次编码器数据（1kHz频率）
+    g_update_encoders_flag = 1;
 }
 
 // 初始化系统
@@ -89,6 +97,12 @@ void SystemInit(void)
     
     // 初始化电机
     Motor_Init();
+    
+    // 初始化编码器
+    Encoder_Init();
+    
+    // 初始化底盘控制器
+    Chassis_Init();
     
     // 初始化超声波
     Hcsr04_Init();
@@ -144,6 +158,14 @@ int main(void)
             g_update_sensors_flag = 0;
         }
         
+        // 更新编码器数据（1kHz频率）
+        if(g_update_encoders_flag) {
+            Encoder_UpdateAll();
+            // 更新底盘闭环控制
+            Chassis_Loop_Update();
+            g_update_encoders_flag = 0;
+        }
+        
         // 更新状态机
         FSM_Update();
         
@@ -163,8 +185,16 @@ int main(void)
         if(g_control_status_flag && g_esp32_wifi.status == WIFI_STATUS_CONNECTED) {
             // 发送系统状态到控制面板
             char status_cmd[128];
-            sprintf(status_cmd, "STATUS:{\"battery\":%.1f,\"wifi_rssi\":%d,\"cpu\":%d,\"state\":%d,\"distance\":%.1f}",
-                   12.6, -65, 35, FSM_GetCurrentState(), Hcsr04_GetDistance());
+            float wheel_speeds[4];
+            
+            // 获取轮子速度信息
+            for(u8 i = 0; i < 4; i++) {
+                wheel_speeds[i] = FSM_HW_GetWheelSpeed(i);
+            }
+            
+            sprintf(status_cmd, "STATUS:{\"battery\":%.1f,\"wifi_rssi\":%d,\"cpu\":%d,\"state\":%d,\"distance\":%.1f,\"speeds\":[%.2f,%.2f,%.2f,%.2f]}",
+                   12.6, -65, 35, FSM_GetCurrentState(), Hcsr04_GetDistance(),
+                   wheel_speeds[0], wheel_speeds[1], wheel_speeds[2], wheel_speeds[3]);
             ESP32_WiFi_SendCommand(status_cmd);
             
             g_control_status_flag = 0;

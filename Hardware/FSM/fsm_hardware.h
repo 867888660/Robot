@@ -35,6 +35,12 @@ const char* FSM_HW_GetIRLineStatus(void);
 u8 FSM_HW_GetBatteryLevel(void);
 const char* FSM_HW_GetNRFMessage(void);
 
+// 编码器接口
+void FSM_HW_InitEncoders(void);              // 初始化编码器
+float FSM_HW_GetMotorRPM(u8 motor_id);       // 获取电机转速 (RPM)
+float FSM_HW_GetWheelSpeed(u8 wheel_id);     // 获取轮子线速度 (m/s)
+void FSM_HW_UpdateEncoders(void);            // 更新编码器数据 (内部调用)
+
 // 系统时间
 u32 FSM_HW_GetTimeMs(void);
 

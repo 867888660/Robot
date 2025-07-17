@@ -230,17 +230,51 @@ void Wireless_Mode(void)
 ***************************************************/
 void Evadible_Mode(void)
 {
-	float Dis;
-	Dis=Hcsr04GetLength();//获取超声波测距值
-	forward(200);//前进
-
-	if(Dis<=15)
-	{
-		backward(200);//后退
-		delay_ms(400);
-		Left_Turn(200);//左转
-		delay_ms(400);
-	}
+    float Dis;
+    static u8 obstacle_detect_count = 0; // 连续障碍物检测计数
+    static u8 direction = 0; // 0-左转，1-右转，动态变换方向
+    
+    Dis = Hcsr04_GetDistance(); // 使用改进后的距离测量函数
+    
+    // 障碍物状态判断
+    if(Dis <= 15) {
+        obstacle_detect_count++; // 连续检测到障碍物计数增加
+        
+        // 连续检测到障碍物超过阈值，执行避障
+        if(obstacle_detect_count >= 2) {
+            // 停止当前运动
+            Motion_State(OFF);
+            delay_ms(100);
+            
+            // 后退一小段距离
+            backward(200);
+            delay_ms(400);
+            
+            // 停止后退
+            Motion_State(OFF);
+            delay_ms(100);
+            
+            // 根据当前方向执行转向
+            if(direction == 0) {
+                Left_Turn(200);
+                delay_ms(600);  // 转向时间增加，确保能避开障碍物
+                direction = 1;  // 下次转向改为右转
+            } else {
+                Right_Turn(200);
+                delay_ms(600);
+                direction = 0;  // 下次转向改为左转
+            }
+            
+            // 停止转向
+            Motion_State(OFF);
+            delay_ms(100);
+            
+            obstacle_detect_count = 0; // 重置计数器
+        }
+    } else {
+        obstacle_detect_count = 0; // 未检测到障碍物，重置计数器
+        forward(180); // 正常前进，速度稍微降低以提高安全性
+    }
 }
 
 /**************************************************
@@ -409,17 +443,57 @@ void Gravity_Mode(void)
 ***************************************************/
 void Follow_Mode(void)
 {
-	float Dis;
-	Dis=Hcsr04GetLength();//获取超声波测距值
-	if(Dis<=10)
-	{
-		backward(200);//后退
-	}
-	else if(Dis<=30&&Dis>=20)
-	{
-		forward(200);//前进
-	}
-	else Motion_State(ON);
+    float Dis;
+    static float prev_distance = 0;
+    static u8 stable_count = 0;
+    
+    Dis = Hcsr04_GetDistance(); // 使用改进后的距离测量函数
+    
+    // 目标距离区间
+    const float TARGET_MIN = 15.0f;
+    const float TARGET_MAX = 25.0f;
+    
+    // 防止首次读取导致剧烈变化
+    if(prev_distance == 0) {
+        prev_distance = Dis;
+        return;
+    }
+    
+    // 距离变化率计算（简单滤波）
+    float distance_change = Dis - prev_distance;
+    prev_distance = Dis;
+    
+    // 检测距离稳定性
+    if(fabs(distance_change) < 3.0f) {
+        stable_count++;
+    } else {
+        stable_count = 0;
+    }
+    
+    // 根据距离调整行为
+    if(Dis < TARGET_MIN) {
+        // 距离太近，后退
+        backward(150 + (int)(10.0f * (TARGET_MIN - Dis))); // 速度与距离成正比
+    }
+    else if(Dis > TARGET_MAX) {
+        // 距离太远，前进
+        if(Dis > 100) {
+            // 超出跟随范围，停止
+            Motion_State(OFF);
+        } else {
+            forward(150 + (int)(2.0f * (Dis - TARGET_MAX))); // 速度与距离成正比
+        }
+    }
+    else {
+        // 在目标范围内，保持静止
+        Motion_State(OFF);
+    }
+    
+    // 如果距离变化剧烈，可能是障碍物突然移动，减速以防碰撞
+    if(fabs(distance_change) > 10.0f && stable_count < 3) {
+        Motion_State(OFF);
+        delay_ms(100);  // 短暂暂停以等待稳定
+    }
 }
 
 /**************************************************

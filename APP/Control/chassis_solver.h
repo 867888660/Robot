@@ -3,12 +3,13 @@
 
 #include "sys.h"
 
-/* 机器人底盘三自由度解算器 (vx, vy, ω → 4 轮目标 PWM) */
-
-// 设置期望底盘速度 (单位: m/s, rad/s)
+// 设置底盘速度向量 (vx, vy, w)
 void Chassis_SetVelocity(float vx, float vy, float w);
 
-// 闭环循环 (建议 1 kHz) — 读取编码器, PID 调速, 更新 PWM
+// 初始化底盘控制器（包括PID控制器）
+void Chassis_Init(void);
+
+// 底盘闭环控制更新（应在1kHz定时中断中调用）
 void Chassis_Loop_Update(void);
 
 #endif /* __CHASSIS_SOLVER_H */ 

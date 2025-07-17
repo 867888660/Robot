@@ -5,10 +5,10 @@ u16 msHcCount = 0;
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºHcsr04_NVIC(void)
-º¯Êı¹¦ÄÜ£ºNVICÉèÖÃ
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+å‡½æ•°åç§°ï¼šHcsr04_NVIC(void)
+å‡½æ•°åŠŸèƒ½ï¼šNVICè®¾ç½®
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šæ— 
 ***************************************************/
 void Hcsr04_NVIC(void)
 {
@@ -24,10 +24,10 @@ void Hcsr04_NVIC(void)
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºHcsr04_Init(void)
-º¯Êı¹¦ÄÜ£ºIO¿Ú³õÊ¼»¯ ¼°ÆäËû³õÊ¼»¯
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+å‡½æ•°åç§°ï¼šHcsr04_Init(void)
+å‡½æ•°åŠŸèƒ½ï¼šIOå£åˆå§‹åŒ– å®šæ—¶å™¨åˆå§‹åŒ–
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šæ— 
 ***************************************************/
 void Hcsr04_Init(void)
 {  
@@ -64,10 +64,10 @@ void Hcsr04_Init(void)
 }
 
 /**************************************************
-º¯ÊıÃû³Æ£ºOpenTimerForHc()  
-º¯Êı¹¦ÄÜ£º´ò¿ª¶¨Ê±Æ÷4
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+å‡½æ•°åç§°ï¼šOpenTimerForHc()  
+å‡½æ•°åŠŸèƒ½ï¼šæ‰“å¼€å®šæ—¶å™¨4
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šæ— 
 ***************************************************/
 static void OpenTimerForHc()  
 {
@@ -78,10 +78,10 @@ static void OpenTimerForHc()
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºvoid CloseTimerForHc()  
-º¯Êı¹¦ÄÜ£º¹Ø±Õ¶¨Ê±Æ÷4
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+å‡½æ•°åç§°ï¼švoid CloseTimerForHc()  
+å‡½æ•°åŠŸèƒ½ï¼šå…³é—­å®šæ—¶å™¨4
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šæ— 
 ***************************************************/
 static void CloseTimerForHc()    
 {
@@ -90,10 +90,10 @@ static void CloseTimerForHc()
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºTIM4_IRQHandler(void)   
-º¯Êı¹¦ÄÜ£º¶¨Ê±Æ÷4ÖÕÖĞ¶Ï
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+å‡½æ•°åç§°ï¼šTIM4_IRQHandler(void)   
+å‡½æ•°åŠŸèƒ½ï¼šå®šæ—¶å™¨4ä¸­æ–­
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šæ— 
 ***************************************************/
 void TIM4_IRQHandler(void)  
 {
@@ -105,10 +105,10 @@ void TIM4_IRQHandler(void)
 }
  
 /**************************************************
-º¯ÊıÃû³Æ£ºGetEchoTimer(void)  
-º¯Êı¹¦ÄÜ£º»ñÈ¡¶¨Ê±Æ÷4¼ÆÊıÆ÷Öµ
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºt:¼ÆÊıÖµ
+å‡½æ•°åç§°ï¼šGetEchoTimer(void)  
+å‡½æ•°åŠŸèƒ½ï¼šè·å–å®šæ—¶å™¨4è®¡æ•°å€¼
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼št:è®¡æ•°å€¼
 ***************************************************/
 u32 GetEchoTimer(void)
 {
@@ -122,10 +122,10 @@ u32 GetEchoTimer(void)
 
 
 /**************************************************
-º¯ÊıÃû³Æ£ºHcsr04GetLength(void)
-º¯Êı¹¦ÄÜ£ºÍ¨¹ı¶¨Ê±Æ÷4¼ÆÊıÆ÷ÖµÍÆËã¾àÀë
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºlengthTemp:¾àÀëCM
+å‡½æ•°åç§°ï¼šHcsr04GetLength(void)
+å‡½æ•°åŠŸèƒ½ï¼šé€šè¿‡å®šæ—¶å™¨4è®¡æ•°å€¼è®¡ç®—è·ç¦»
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šlengthTemp:è·ç¦»CM
 ***************************************************/
 float Hcsr04GetLength(void)
 {
@@ -145,24 +145,164 @@ float Hcsr04GetLength(void)
       CloseTimerForHc();        
       t = GetEchoTimer();        
       lengthTemp = ((float)t/58.0);//cm
-      sum = lengthTemp + sum ;     
+      sum = lengthTemp + sum;
+      delay_ms(10); // å¢åŠ æµ‹é‡ä¹‹é—´çš„å»¶æ—¶ï¼Œæé«˜ç²¾åº¦
    }
    lengthTemp = sum/5.0;
    return lengthTemp;
 }
 
+/**************************************************
+å‡½æ•°åç§°ï¼šHcsr04_MeasureWithTimeout(float* distance)
+å‡½æ•°åŠŸèƒ½ï¼šå¸¦è¶…æ—¶æœºåˆ¶çš„è¶…å£°æ³¢æµ‹è·
+è¾“å…¥å‚æ•°ï¼šdistance - æµ‹é‡è·ç¦»çš„æŒ‡é’ˆ
+è¿”å›å‚æ•°ï¼š0-æµ‹é‡è¶…æ—¶ï¼Œ1-æµ‹é‡æˆåŠŸ
+***************************************************/
+u8 Hcsr04_MeasureWithTimeout(float* distance)
+{
+   u32 t = 0;
+   u32 timeout = 0;
+   
+   // å‘é€10usä»¥ä¸Šçš„é«˜ç”µå¹³è„‰å†²è§¦å‘æµ‹è·
+   TRIG_Send = 1;      
+   delay_us(20);
+   TRIG_Send = 0;
+   
+   // ç­‰å¾…Echoå¼•è„šå˜é«˜ï¼Œå¢åŠ è¶…æ—¶å¤„ç†
+   timeout = 0;
+   while(ECHO_Reci == 0)
+   {
+      delay_us(10);
+      timeout++;
+      if(timeout > 1000) // 10msè¶…æ—¶ï¼ŒEchoæœªå˜é«˜
+      {
+         *distance = HCSR04_MAX_DISTANCE; // è¿”å›æœ€å¤§è·ç¦»
+         return 0; // è¶…æ—¶è¿”å›0
+      }
+   }
+   
+   // å¼€å§‹è®¡æ—¶
+   OpenTimerForHc();
+   
+   // ç­‰å¾…Echoå¼•è„šå˜ä½ï¼Œå¢åŠ è¶…æ—¶å¤„ç†
+   timeout = 0;
+   while(ECHO_Reci == 1)
+   {
+      delay_us(100);
+      timeout++;
+      if(timeout > HCSR04_TIMEOUT_MS * 10) // è¶…è¿‡è®¾å®šçš„è¶…æ—¶æ—¶é—´
+      {
+         CloseTimerForHc();
+         *distance = HCSR04_MAX_DISTANCE; // è¿”å›æœ€å¤§è·ç¦»
+         return 0; // è¶…æ—¶è¿”å›0
+      }
+   }
+   
+   // åœæ­¢è®¡æ—¶
+   CloseTimerForHc();
+   
+   // è·å–è®¡æ—¶ç»“æœ
+   t = GetEchoTimer();
+   
+   // è®¡ç®—è·ç¦» (å£°é€Ÿ340m/s, t/58 = å˜ç±³)
+   *distance = ((float)t/58.0);
+   
+   // èŒƒå›´é™åˆ¶
+   if(*distance > HCSR04_MAX_DISTANCE)
+      *distance = HCSR04_MAX_DISTANCE;
+   
+   return 1; // æµ‹é‡æˆåŠŸ
+}
 
 /**************************************************
-º¯ÊıÃû³Æ£ºHcsr04_Text(void)
-º¯Êı¹¦ÄÜ£º²âÊÔº¯Êı
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø²ÎÊı£ºÎŞ
+å‡½æ•°åç§°ï¼šHcsr04_FilteredMeasurement(void)
+å‡½æ•°åŠŸèƒ½ï¼šå¸¦æ»¤æ³¢çš„è¶…å£°æ³¢æµ‹è·
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šæ»¤æ³¢åçš„è·ç¦»å€¼(cm)
+***************************************************/
+float Hcsr04_FilteredMeasurement(void)
+{
+   float distances[HCSR04_FILTER_SIZE];
+   float validDistances[HCSR04_FILTER_SIZE];
+   float sum = 0;
+   u8 validCount = 0;
+   u8 i, j, k;
+   float temp;
+   
+   // è¿ç»­æµ‹é‡å¤šæ¬¡
+   for(i = 0; i < HCSR04_FILTER_SIZE; i++)
+   {
+      if(Hcsr04_MeasureWithTimeout(&distances[i]))
+      {
+         validDistances[validCount++] = distances[i];
+      }
+      delay_ms(HCSR04_DELAY_BETWEEN_SAMPLES); // æµ‹é‡é—´éš”
+   }
+   
+   // å¦‚æœæ²¡æœ‰æœ‰æ•ˆæµ‹é‡ï¼Œè¿”å›æœ€å¤§è·ç¦»
+   if(validCount == 0)
+      return HCSR04_MAX_DISTANCE;
+   
+   // å†’æ³¡æ’åºå»é™¤å¼‚å¸¸å€¼
+   for(i = 0; i < validCount - 1; i++)
+   {
+      for(j = 0; j < validCount - 1 - i; j++)
+      {
+         if(validDistances[j] > validDistances[j+1])
+         {
+            temp = validDistances[j];
+            validDistances[j] = validDistances[j+1];
+            validDistances[j+1] = temp;
+         }
+      }
+   }
+   
+   // å»æ‰æœ€é«˜å’Œæœ€ä½å€¼åè®¡ç®—å‡å€¼ï¼ˆå¦‚æœæœ‰è¶³å¤Ÿå¤šçš„æœ‰æ•ˆæµ‹é‡ï¼‰
+   k = 0;
+   if(validCount >= 3)
+   {
+      // å»æ‰æœ€é«˜å’Œæœ€ä½
+      for(i = 1; i < validCount - 1; i++)
+      {
+         sum += validDistances[i];
+         k++;
+      }
+   }
+   else
+   {
+      // æœ‰æ•ˆæ•°æ®å¤ªå°‘ï¼Œå…¨éƒ¨ä½¿ç”¨
+      for(i = 0; i < validCount; i++)
+      {
+         sum += validDistances[i];
+         k++;
+      }
+   }
+   
+   return sum / k;
+}
+
+/**************************************************
+å‡½æ•°åç§°ï¼šHcsr04_GetDistance(void)
+å‡½æ•°åŠŸèƒ½ï¼šå¯¹å¤–æä¾›çš„è·å–è·ç¦»æ¥å£ï¼Œä¸main.cä¸­ä¸€è‡´
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šè·ç¦»å€¼(cm)
+***************************************************/
+float Hcsr04_GetDistance(void)
+{
+   return Hcsr04_FilteredMeasurement();
+}
+
+/**************************************************
+å‡½æ•°åç§°ï¼šHcsr04_Text(void)
+å‡½æ•°åŠŸèƒ½ï¼šæµ‹è¯•å‡½æ•°
+è¾“å…¥å‚æ•°ï¼šæ— 
+è¿”å›å‚æ•°ï¼šæ— 
 ***************************************************/
 void Hcsr04_Text(void)
 {
 	float r;
-	r=Hcsr04GetLength();
-	printf("r=%.2f\n",r);
+	r = Hcsr04_GetDistance();
+	printf("r=%.2f cm\n", r);
 	delay_ms(1000);
 }
 
