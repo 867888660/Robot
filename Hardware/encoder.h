@@ -3,6 +3,11 @@
 
 #include "sys.h"
 
+// 编码器配置选项
+// 取消注释以下行可以启用TIM4/TIM5作为编码器输入
+// #define USE_TIM4_ENCODER    // 使用TIM4作为电机3编码器
+// #define USE_TIM5_ENCODER    // 使用TIM5作为电机4编码器
+
 // 电机编码器通道定义
 #define ENCODER_MOTOR_1    0
 #define ENCODER_MOTOR_2    1
@@ -10,7 +15,7 @@
 #define ENCODER_MOTOR_4    3
 #define ENCODER_MAX_NUM    4
 
-// 编码器参数定义
+// 根据实际编码器和电机参数修改这两个值
 #define ENCODER_PULSE_PER_REV    11   // 每转脉冲数 (示例值，根据实际编码器调整)
 #define ENCODER_GEAR_RATIO       34   // 减速比 (示例值，根据实际电机调整)
 
