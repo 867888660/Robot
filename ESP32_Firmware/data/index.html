@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智能机器人WiFi配置</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            background-color: #0078d7;
+            color: white;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 15px;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: white;
+            margin: 5px 8px;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+            font-size: 15px;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+            touch-action: manipulation;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .refresh-btn {
+            width: auto;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            font-size: 15px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .refresh-btn:hover {
+            background-color: #e0e0e0;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+            font-size: 16px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .status.connecting {
+            background-color: #fff3cd;
+            color: #856404;
+            display: block;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            font-size: 12px;
+        }
+        .network-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .network-item {
+            padding: 14px 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            touch-action: manipulation;
+        }
+        .network-item:hover {
+            background-color: #f5f5f5;
+        }
+        .network-item:last-child {
+            border-bottom: none;
+        }
+        .network-info {
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+        }
+        .signal-strength {
+            margin-left: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .wifi-icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        .mode-selector {
+            margin-bottom: 20px;
+        }
+        .mode-info {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .mode-box {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .mode-box h4 {
+            margin: 0 0 5px 0;
+            font-size: 15px;
+        }
+        .mode-box p {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        .mode-box.active {
+            border-color: #0078d7;
+            background-color: #f0f7ff;
+        }
+        .section-header {
+            padding: 12px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 15px;
+        }
+        .section-header:hover {
+            background-color: #e8e8e8;
+        }
+        .toggle-icon {
+            float: right;
+            transition: transform 0.3s;
+        }
+        .advanced-options {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .ip-settings {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        /* Enhanced mobile styles */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+                margin: 10px 0;
+            }
+            
+            .mode-info {
+                flex-direction: column;
+            }
+            
+            .network-item {
+                padding: 15px 10px;
+            }
+            
+            input[type="checkbox"] {
+                transform: scale(1.3);
+                margin-right: 8px;
+            }
+            
+            .section-header {
+                padding: 14px 12px;
+                font-weight: bold;
+            }
+            
+            .form-group label {
+                margin-bottom: 10px;
+            }
+            
+            .refresh-btn {
+                width: 100%;
+                margin-bottom: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>智能机器人WiFi配置</h1>
+            <div class="nav-links">
+                <a href="/joystick.html">控制面板</a>
+                <a href="/update">ESP32更新</a>
+                <a href="/ota_stm32">STM32更新</a>
+            </div>
+        </div>
+        <div class="form-container">
+            <div class="mode-selector">
+                <h3>连接模式:</h3>
+                <div class="mode-info">
+                    <div id="apModeInfo" class="mode-box active">
+                        <h4>热点模式 (AP)</h4>
+                        <p>IP地址: <span id="apIp">192.168.4.1</span></p>
+                        <p>SSID: <span id="apSsid">CarConfig_AP</span></p>
+                    </div>
+                    <div id="staModeInfo" class="mode-box">
+                        <h4>WiFi客户端模式 (STA)</h4>
+                        <p>IP地址: <span id="staIp">未连接</span></p>
+                        <p>连接状态: <span id="staStatus">离线</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="refreshBtn" class="refresh-btn">刷新WiFi列表</button>
+            <div id="networkList" class="network-list">
+                <div class="network-item">正在扫描可用网络...</div>
+            </div>
+            <form id="wifiForm">
+                <div class="form-group">
+                    <label for="ssid">WiFi名称 (SSID):</label>
+                    <input type="text" id="ssid" name="ssid" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">WiFi密码:</label>
+                    <input type="password" id="password" name="password">
+                </div>
+                
+                <!-- 高级网络设置 (默认隐藏) -->
+                <div class="advanced-section">
+                    <div class="section-header" id="advancedToggle">
+                        高级设置 <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="advanced-options" id="advancedOptions" style="display: none;">
+                        <div class="form-group">
+                            <label for="staticIp">
+                                <input type="checkbox" id="staticIp" name="staticIp" style="vertical-align: middle; margin-right: 5px;">
+                                使用静态IP
+                            </label>
+                        </div>
+                        <div class="ip-settings" id="ipSettings" style="display: none;">
+                            <div class="form-group">
+                                <label for="ip">IP地址:</label>
+                                <input type="text" id="ip" name="ip" placeholder="192.168.1.100">
+                            </div>
+                            <div class="form-group">
+                                <label for="gateway">网关:</label>
+                                <input type="text" id="gateway" name="gateway" placeholder="192.168.1.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="subnet">子网掩码:</label>
+                                <input type="text" id="subnet" name="subnet" placeholder="255.255.255.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="dns">DNS服务器:</label>
+                                <input type="text" id="dns" name="dns" placeholder="8.8.8.8">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit">连接</button>
+            </form>
+            <div id="statusMessage" class="status"></div>
+        </div>
+        <div class="footer">
+            <p>© 2023 智能机器人系统 | 版本 1.0</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('wifiForm');
+            const statusMessage = document.getElementById('statusMessage');
+            const networkList = document.getElementById('networkList');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const advancedToggle = document.getElementById('advancedToggle');
+            const advancedOptions = document.getElementById('advancedOptions');
+            const staticIpCheck = document.getElementById('staticIp');
+            const ipSettings = document.getElementById('ipSettings');
+            
+            // 获取WiFi连接状态
+            function getWifiStatus() {
+                fetch('/wifi_status')
+                    .then(response => response.json())
+                    .then(data => {
+                        const apModeInfo = document.getElementById('apModeInfo');
+                        const staModeInfo = document.getElementById('staModeInfo');
+                        const apSsid = document.getElementById('apSsid');
+                        const apIp = document.getElementById('apIp');
+                        const staIp = document.getElementById('staIp');
+                        const staStatus = document.getElementById('staStatus');
+                        
+                        // 设置AP模式信息
+                        apSsid.textContent = data.ap_ssid || 'CarConfig_AP';
+                        apIp.textContent = data.ap_ip || '192.168.4.1';
+                        
+                        // 设置STA模式信息
+                        if (data.sta_connected) {
+                            staModeInfo.classList.add('active');
+                            staIp.textContent = data.sta_ip;
+                            staStatus.textContent = '已连接到 ' + data.sta_ssid;
+                            staStatus.style.color = '#28a745';
+                        } else {
+                            staModeInfo.classList.remove('active');
+                            staIp.textContent = '未连接';
+                            staStatus.textContent = '离线';
+                            staStatus.style.color = '#dc3545';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取WiFi状态失败:', error);
+                    });
+            }
+            
+            // 扫描WiFi网络
+            function scanWiFiNetworks() {
+                networkList.innerHTML = '<div class="network-item">正在扫描可用网络...</div>';
+                
+                fetch('/scan_wifi')
+                    .then(response => response.json())
+                    .then(networks => {
+                        if (networks.length === 0) {
+                            // 如果返回空数组，可能是扫描还在进行中，等待一会再次尝试
+                            setTimeout(scanWiFiNetworks, 2000);
+                            return;
+                        }
+                        
+                        networkList.innerHTML = '';
+                        
+                        // 按信号强度排序
+                        networks.sort((a, b) => b.rssi - a.rssi);
+                        
+                        networks.forEach(function(network) {
+                            const item = document.createElement('div');
+                            item.className = 'network-item';
+                            
+                            // 计算信号强度显示
+                            let signalStrength = "弱";
+                            let signalIcon = "📶";
+                            if (network.rssi > -50) {
+                                signalStrength = "强";
+                            } else if (network.rssi > -70) {
+                                signalStrength = "中";
+                            }
+                            
+                            // 创建网络信息显示
+                            const networkInfo = document.createElement('div');
+                            networkInfo.className = 'network-info';
+                            
+                            // 添加锁图标（如果是加密网络）
+                            const secureIcon = network.secure ? '🔒 ' : '';
+                            
+                            networkInfo.innerHTML = `<span class="wifi-icon">${signalIcon}</span>${secureIcon}${network.ssid}`;
+                            
+                            const signalElement = document.createElement('div');
+                            signalElement.className = 'signal-strength';
+                            signalElement.textContent = `信号: ${signalStrength}`;
+                            
+                            item.appendChild(networkInfo);
+                            item.appendChild(signalElement);
+                            
+                            item.addEventListener('click', function() {
+                                document.getElementById('ssid').value = network.ssid;
+                                // 自动聚焦到密码框，方便用户直接输入
+                                document.getElementById('password').focus();
+                            });
+                            
+                            networkList.appendChild(item);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('扫描WiFi失败:', error);
+                        networkList.innerHTML = '<div class="network-item">扫描失败，请点击刷新重试</div>';
+                    });
+            }
+            
+            // 高级设置切换
+            advancedToggle.addEventListener('click', function() {
+                const toggleIcon = advancedToggle.querySelector('.toggle-icon');
+                if (advancedOptions.style.display === 'none') {
+                    advancedOptions.style.display = 'block';
+                    toggleIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    advancedOptions.style.display = 'none';
+                    toggleIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // 静态IP选项切换
+            staticIpCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    ipSettings.style.display = 'block';
+                } else {
+                    ipSettings.style.display = 'none';
+                }
+            });
+            
+            // 页面初始化
+            getWifiStatus();
+            scanWiFiNetworks();
+            
+            // 刷新按钮事件
+            refreshBtn.addEventListener('click', function() {
+                scanWiFiNetworks();
+                getWifiStatus();
+            });
+            
+            // 表单提交
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const ssid = document.getElementById('ssid').value;
+                const password = document.getElementById('password').value;
+                
+                if (!ssid) {
+                    showStatus('请选择或输入WiFi名称', 'error');
+                    return;
+                }
+                
+                showStatus('正在连接到 ' + ssid + '...', 'connecting');
+                
+                // 构建基本参数
+                let bodyParams = `ssid=${encodeURIComponent(ssid)}&password=${encodeURIComponent(password)}`;
+                
+                // 添加静态IP设置（如果启用）
+                if (staticIpCheck.checked) {
+                    const ip = document.getElementById('ip').value;
+                    const gateway = document.getElementById('gateway').value;
+                    const subnet = document.getElementById('subnet').value;
+                    const dns = document.getElementById('dns').value;
+                    
+                    if (ip && gateway && subnet) {
+                        bodyParams += `&static_ip=${encodeURIComponent(ip)}`;
+                        bodyParams += `&static_gateway=${encodeURIComponent(gateway)}`;
+                        bodyParams += `&static_subnet=${encodeURIComponent(subnet)}`;
+                        
+                        if (dns) {
+                            bodyParams += `&static_dns=${encodeURIComponent(dns)}`;
+                        }
+                    } else {
+                        showStatus('使用静态IP时必须提供IP地址、网关和子网掩码', 'error');
+                        return;
+                    }
+                }
+                
+                // 发送WiFi凭据到ESP32
+                fetch('/connect_wifi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: bodyParams
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showStatus('连接成功! ' + data.message, 'success');
+                        setTimeout(function() {
+                            window.location.href = '/joystick.html';
+                        }, 3000);
+                    } else {
+                        showStatus('连接失败: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('连接请求失败:', error);
+                    showStatus('连接请求失败，请稍后重试', 'error');
+                });
+            });
+            
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status ' + type;
+            }
+            
+            // 定期刷新WiFi状态
+            setInterval(getWifiStatus, 5000);
+        });
+    </script>
+</body>
+</html> 

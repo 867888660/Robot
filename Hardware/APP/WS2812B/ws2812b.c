@@ -1,29 +1,35 @@
 #include "ws2812b.h"
+#include "delay.h"
+
+// æ·»åŠ __nop()å‡½æ•°å£°æ˜Ž
+static inline void __nop(void) {
+    __ASM volatile ("nop");
+}
 
 /******************************************
 
-RGBÑÕÉ«×ª»»ÍøÕ¾
+RGBÉ«×ªÕ¾
 
 https://www.sioe.cn/yingyong/yanse-rgb-16/
 
-RGB->Ê®Áù½øÖÆ    255 0 0    #FF0000
+RGB->Ê®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½    255 0 0    #FF0000
 
 
 
-ºì: #FF0000
-³È:	#FFA500
-»Æ:	#FFFF00
-ÂÌ:	#00FF00
-Ç³À¶:#00FFFF
-À¶:	#0000FF
-·Û:	#FFC0CB
-×Ï: #FF00FF	
+ï¿½ï¿½: #FF0000
+ï¿½ï¿½:	#FFA500
+ï¿½ï¿½:	#FFFF00
+ï¿½ï¿½:	#00FF00
+Ç³ï¿½ï¿½:#00FFFF
+ï¿½ï¿½:	#0000FF
+ï¿½ï¿½:	#FFC0CB
+ï¿½ï¿½: #FF00FF	
 
 
 
 *******************************************/
 
-float RGB_R,RGB_G,RGB_B;//HSV×ªRGBµÄÑÕÉ«
+float RGB_R,RGB_G,RGB_B;//HSV×ªRGBï¿½ï¿½ï¿½ï¿½É«
 
 
 void RGB_LED_Init(void)
@@ -99,51 +105,51 @@ void RGB_LED_Write_24Bits(uint8_t green,uint8_t red,uint8_t blue)
 }
 
 
-//ÁÁµÆÑÕÉ«Éè¶¨£¬ÆäËûÑÕÉ«ÒÔ´ËÀàÍÆ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½
 void RGB_LED_Red(void)
 {
 	 uint8_t i;
-	//6¸öLEDÈ«²ÊµÆ
+	//6ï¿½ï¿½LEDÈ«ï¿½Êµï¿½
 	for(i=0;i<6;i++)
 		{
 			RGB_LED_Write_24Bits(0, 0xff, 0);
 	}
 }
 
-//ÁÁµÆÑÕÉ«Éè¶¨£¬ÆäËûÑÕÉ«ÒÔ´ËÀàÍÆ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½
 void RGB_LED_Green(void)
 {
 	 uint8_t i;
-	//6¸öLEDÈ«²ÊµÆ
+	//6ï¿½ï¿½LEDÈ«ï¿½Êµï¿½
 	for(i=0;i<6;i++)
 		{
 			RGB_LED_Write_24Bits(0xff, 0, 0);
 	}
 }
 
-//ÁÁµÆÑÕÉ«Éè¶¨£¬ÆäËûÑÕÉ«ÒÔ´ËÀàÍÆ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½
 void RGB_LED_Blue(void)
 {
 	 uint8_t i;
-	//6¸öLEDÈ«²ÊµÆ
+	//6ï¿½ï¿½LEDÈ«ï¿½Êµï¿½
 	for(i=0;i<6;i++)
 		{
 			RGB_LED_Write_24Bits(0, 0, 0xff);
 	}
 }
 
-//RGBµÆ12ÖÖÑÕÉ«¸Ä±ä
+//RGBï¿½ï¿½12ï¿½ï¿½ï¿½ï¿½É«ï¿½Ä±ï¿½
 void RGB_Circulation(u8 mode)
 {
 /*
-ºì: #FF0000
-³È:	#FFA500
-»Æ:	#FFFF00
-ÂÌ:	#00FF00
-Ç³À¶:#00FFFF
-À¶:	#0000FF
-·Û:	#FFC0CB
-×Ï: #FF00FF	
+ï¿½ï¿½: #FF0000
+ï¿½ï¿½:	#FFA500
+ï¿½ï¿½:	#FFFF00
+ï¿½ï¿½:	#00FF00
+Ç³ï¿½ï¿½:#00FFFF
+ï¿½ï¿½:	#0000FF
+ï¿½ï¿½:	#FFC0CB
+ï¿½ï¿½: #FF00FF	
 */
 
 	uint8_t i;
@@ -208,15 +214,15 @@ void RGB_Circulation(u8 mode)
 
 
 /*********************************************************************************************
-RGB×ª»¯µ½HSVµÄËã·¨:
-    max=max(R,G,B)£»
-    min=min(R,G,B)£»
-    V=max(R,G,B)£»
-    S=(max-min)/max£»
-    if (R = max) H =(G-B)/(max-min)* 60£»
-    if (G = max) H = 120+(B-R)/(max-min)* 60£»
-    if (B = max) H = 240 +(R-G)/(max-min)* 60£»
-    if (H < 0) H = H + 360£»
+RGB×ªï¿½ï¿½ï¿½ï¿½HSVï¿½ï¿½ï¿½ã·¨:
+    max=max(R,G,B)ï¿½ï¿½
+    min=min(R,G,B)ï¿½ï¿½
+    V=max(R,G,B)ï¿½ï¿½
+    S=(max-min)/maxï¿½ï¿½
+    if (R = max) H =(G-B)/(max-min)* 60ï¿½ï¿½
+    if (G = max) H = 120+(B-R)/(max-min)* 60ï¿½ï¿½
+    if (B = max) H = 240 +(R-G)/(max-min)* 60ï¿½ï¿½
+    if (H < 0) H = H + 360ï¿½ï¿½
 ***********************************************************************************************/
 void hsv_to_rgb(int h,int s,int v,float *R,float *G,float *B)
 {

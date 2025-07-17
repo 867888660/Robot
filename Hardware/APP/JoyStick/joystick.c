@@ -1,7 +1,10 @@
 #include "control_mode.h"
 #include "control.h"        // Legacy
-#include "fsm_control.h"    // JSON-FSM
+#include "../Control/fsm_control.h"    // 修改路径
 #include "joystick.h"
+
+// 定义全局控制模式变量
+volatile CtrlMode g_ctrlMode = CTRL_MODE_MANUAL;
 
 
 u16 ADC_Data[2]; // ADC 数据存储
@@ -199,6 +202,15 @@ void JoyStick_Text()
 }
 
 
+// 添加millis函数，使用SysTick计数器
+static uint32_t millis(void) {
+    // 使用SysTick计数器的当前值
+    return (uint32_t)((SysTick->LOAD - SysTick->VAL) / (SystemCoreClock / 1000));
+}
+
+// 定义KEY_START宏，使用PB0引脚
+#define KEY_START  GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_0)
+
 static uint32_t start_press_tick = 0;
 static uint8_t  in_switch_mode   = 0;
 static uint8_t  last_start_key   = 0;
@@ -239,14 +251,14 @@ void JoyStick_Process(void)
     last_start_key = start_key;
 }
 
-volatile CtrlMode g_ctrlMode = CTRL_MODE_JOYSTICK;
+// g_ctrlMode已在control_mode.c中定义
 
 void CtrlMode_Set(CtrlMode m)
 {
     if(g_ctrlMode == m) return;
     g_ctrlMode = m;
     printf("CTRL MODE -> %s\r\n",
-          m == CTRL_MODE_JOYSTICK ? "JOYSTICK" : "JSON");
+          m == CTRL_MODE_MANUAL ? "MANUAL" : (m == CTRL_MODE_AUTO ? "AUTO" : "JOYSTICK"));
 }
 
 void CtrlMode_Next(void) { CtrlMode_Set((g_ctrlMode+1) % 2); }

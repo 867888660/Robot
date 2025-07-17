@@ -265,8 +265,9 @@ __ASM void __set_CONTROL(uint32_t control)
  */
 uint32_t __get_PSP(void)
 {
-  __ASM("mrs r0, psp");
-  __ASM("bx lr");
+  uint32_t result;
+  __ASM volatile ("mrs %0, psp" : "=r" (result));
+  return result;
 }
 
 /**
@@ -279,8 +280,7 @@ uint32_t __get_PSP(void)
  */
 void __set_PSP(uint32_t topOfProcStack)
 {
-  __ASM("msr psp, r0");
-  __ASM("bx lr");
+  __ASM volatile ("msr psp, %0" : : "r" (topOfProcStack));
 }
 
 /**
@@ -293,8 +293,9 @@ void __set_PSP(uint32_t topOfProcStack)
  */
 uint32_t __get_MSP(void)
 {
-  __ASM("mrs r0, msp");
-  __ASM("bx lr");
+  uint32_t result;
+  __ASM volatile ("mrs %0, msp" : "=r" (result));
+  return result;
 }
 
 /**
@@ -307,8 +308,7 @@ uint32_t __get_MSP(void)
  */
 void __set_MSP(uint32_t topOfMainStack)
 {
-  __ASM("msr msp, r0");
-  __ASM("bx lr");
+  __ASM volatile ("msr msp, %0" : : "r" (topOfMainStack));
 }
 
 /**
@@ -439,7 +439,6 @@ uint32_t __STREXW(uint32_t value, uint32_t *addr)
  *
  * Return the actual process stack pointer
  */
-uint32_t __get_PSP(void) __attribute__( ( naked ) );
 uint32_t __get_PSP(void)
 {
   uint32_t result=0;
@@ -458,7 +457,6 @@ uint32_t __get_PSP(void)
  * Assign the value ProcessStackPointer to the MSP 
  * (process stack pointer) Cortex processor register
  */
-void __set_PSP(uint32_t topOfProcStack) __attribute__( ( naked ) );
 void __set_PSP(uint32_t topOfProcStack)
 {
   __ASM volatile ("MSR psp, %0\n\t"
@@ -473,7 +471,6 @@ void __set_PSP(uint32_t topOfProcStack)
  * Return the current value of the MSP (main stack pointer)
  * Cortex processor register
  */
-uint32_t __get_MSP(void) __attribute__( ( naked ) );
 uint32_t __get_MSP(void)
 {
   uint32_t result=0;
@@ -492,7 +489,6 @@ uint32_t __get_MSP(void)
  * Assign the value mainStackPointer to the MSP 
  * (main stack pointer) Cortex processor register
  */
-void __set_MSP(uint32_t topOfMainStack) __attribute__( ( naked ) );
 void __set_MSP(uint32_t topOfMainStack)
 {
   __ASM volatile ("MSR msp, %0\n\t"

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能机器人控制面板</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            touch-action: none;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #0078d7;
+            color: white;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 20px;
+        }
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .joystick-container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+        .joystick {
+            width: 200px;
+            height: 200px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+            border: 2px solid #ddd;
+            touch-action: none;
+        }
+        .joystick-knob {
+            width: 60px;
+            height: 60px;
+            background-color: #0078d7;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            touch-action: none;
+        }
+        .status-panel {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .button-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .control-button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+        .control-button:hover {
+            background-color: #0056b3;
+        }
+        .control-button.stop {
+            background-color: #dc3545;
+            grid-column: span 2;
+        }
+        .control-button.stop:hover {
+            background-color: #c82333;
+        }
+        .velocity-display {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .velocity-value {
+            font-weight: bold;
+            color: #0078d7;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            .joystick {
+                width: 150px;
+                height: 150px;
+            }
+            .joystick-knob {
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>智能机器人控制面板</h1>
+        </div>
+        <div class="control-panel">
+            <div class="joystick-container">
+                <h2>移动控制</h2>
+                <div id="joystick" class="joystick">
+                    <div id="knob" class="joystick-knob"></div>
+                </div>
+                <div class="velocity-display">
+                    <div>前进速度: <span id="vx-value" class="velocity-value">0.00</span> m/s</div>
+                    <div>横向速度: <span id="vy-value" class="velocity-value">0.00</span> m/s</div>
+                    <div>旋转速度: <span id="w-value" class="velocity-value">0.00</span> rad/s</div>
+                </div>
+                <div class="button-panel">
+                    <button id="forward-btn" class="control-button">前进</button>
+                    <button id="backward-btn" class="control-button">后退</button>
+                    <button id="left-btn" class="control-button">左转</button>
+                    <button id="right-btn" class="control-button">右转</button>
+                    <button id="stop-btn" class="control-button stop">急停</button>
+                </div>
+            </div>
+            <div class="status-panel">
+                <h2>状态信息</h2>
+                <div class="status-item">
+                    <div>电池电压:</div>
+                    <div id="battery-voltage">12.6V</div>
+                </div>
+                <div class="status-item">
+                    <div>WiFi信号:</div>
+                    <div id="wifi-signal">-65dBm</div>
+                </div>
+                <div class="status-item">
+                    <div>CPU使用率:</div>
+                    <div id="cpu-usage">35%</div>
+                </div>
+                <div class="status-item">
+                    <div>运行状态:</div>
+                    <div id="run-status">正常</div>
+                </div>
+                <div class="status-item">
+                    <div>当前状态机状态:</div>
+                    <div id="fsm-state">1</div>
+                </div>
+                <div class="status-item">
+                    <div>障碍物距离:</div>
+                    <div id="obstacle-distance">无障碍物</div>
+                </div>
+                <h3>系统信息</h3>
+                <div class="status-item">
+                    <div>IP地址:</div>
+                    <div id="ip-address">192.168.1.100</div>
+                </div>
+                <div class="status-item">
+                    <div>固件版本:</div>
+                    <div id="firmware-version">v1.0</div>
+                </div>
+                <div class="status-item">
+                    <div>运行时间:</div>
+                    <div id="uptime">01:23:45</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© 2023 智能机器人系统 | 版本 1.0</p>
+        </div>
+    </div>
+    <script>
+        // 虚拟摇杆控制
+        const joystick = document.getElementById('joystick');
+        const knob = document.getElementById('knob');
+        const vxValue = document.getElementById('vx-value');
+        const vyValue = document.getElementById('vy-value');
+        const wValue = document.getElementById('w-value');
+        
+        // 状态元素
+        const batteryVoltage = document.getElementById('battery-voltage');
+        const wifiSignal = document.getElementById('wifi-signal');
+        const cpuUsage = document.getElementById('cpu-usage');
+        const runStatus = document.getElementById('run-status');
+        const fsmState = document.getElementById('fsm-state');
+        const obstacleDistance = document.getElementById('obstacle-distance');
+        const ipAddress = document.getElementById('ip-address');
+        const firmwareVersion = document.getElementById('firmware-version');
+        const uptime = document.getElementById('uptime');
+        
+        // 按钮元素
+        const forwardBtn = document.getElementById('forward-btn');
+        const backwardBtn = document.getElementById('backward-btn');
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        
+        // 摇杆参数
+        let isDragging = false;
+        let maxDistance = joystick.clientWidth / 2 - knob.clientWidth / 2;
+        let centerX = joystick.clientWidth / 2;
+        let centerY = joystick.clientHeight / 2;
+        let currentX = centerX;
+        let currentY = centerY;
+        
+        // 速度参数
+        let vx = 0;
+        let vy = 0;
+        let w = 0;
+        const maxSpeed = 0.5; // 最大线速度 m/s
+        const maxAngular = 1.0; // 最大角速度 rad/s
+        
+        // 摇杆事件处理
+        function handleStart(e) {
+            isDragging = true;
+            e.preventDefault();
+        }
+        
+        function handleMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            // 获取触摸或鼠标位置
+            let clientX, clientY;
+            if (e.type === 'touchmove') {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            // 计算相对于摇杆中心的位置
+            const rect = joystick.getBoundingClientRect();
+            const offsetX = clientX - rect.left - centerX;
+            const offsetY = clientY - rect.top - centerY;
+            
+            // 计算距离和角度
+            const distance = Math.min(maxDistance, Math.sqrt(offsetX * offsetX + offsetY * offsetY));
+            const angle = Math.atan2(offsetY, offsetX);
+            
+            // 计算摇杆位置
+            currentX = centerX + distance * Math.cos(angle);
+            currentY = centerY + distance * Math.sin(angle);
+            
+            // 更新摇杆位置
+            knob.style.left = currentX + 'px';
+            knob.style.top = currentY + 'px';
+            
+            // 计算速度
+            const normalizedDistance = distance / maxDistance;
+            vx = -normalizedDistance * Math.sin(angle) * maxSpeed; // 前后方向
+            vy = normalizedDistance * Math.cos(angle) * maxSpeed; // 左右方向
+            
+            // 旋转速度 (简化为左右方向的分量)
+            w = normalizedDistance * Math.cos(angle) * maxAngular;
+            
+            // 更新显示
+            updateVelocityDisplay();
+            
+            // 在实际设备上会发送控制命令
+            // 这里仅模拟显示
+            console.log(`发送速度命令: vx=${vx.toFixed(2)}, vy=${vy.toFixed(2)}, w=${w.toFixed(2)}`);
+        }
+        
+        function handleEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            e.preventDefault();
+            
+            // 摇杆回中
+            knob.style.left = centerX + 'px';
+            knob.style.top = centerY + 'px';
+            currentX = centerX;
+            currentY = centerY;
+            
+            // 速度归零
+            vx = 0;
+            vy = 0;
+            w = 0;
+            
+            // 更新显示
+            updateVelocityDisplay();
+            
+            // 在实际设备上会发送停止命令
+            console.log('发送停止命令');
+        }
+        
+        // 更新速度显示
+        function updateVelocityDisplay() {
+            vxValue.textContent = vx.toFixed(2);
+            vyValue.textContent = vy.toFixed(2);
+            wValue.textContent = w.toFixed(2);
+        }
+        
+        // 按钮控制
+        forwardBtn.addEventListener('mousedown', () => { vx = maxSpeed; updateVelocityDisplay(); console.log('前进'); });
+        forwardBtn.addEventListener('mouseup', () => { vx = 0; updateVelocityDisplay(); console.log('停止'); });
+        
+        backwardBtn.addEventListener('mousedown', () => { vx = -maxSpeed; updateVelocityDisplay(); console.log('后退'); });
+        backwardBtn.addEventListener('mouseup', () => { vx = 0; updateVelocityDisplay(); console.log('停止'); });
+        
+        leftBtn.addEventListener('mousedown', () => { w = maxAngular; updateVelocityDisplay(); console.log('左转'); });
+        leftBtn.addEventListener('mouseup', () => { w = 0; updateVelocityDisplay(); console.log('停止'); });
+        
+        rightBtn.addEventListener('mousedown', () => { w = -maxAngular; updateVelocityDisplay(); console.log('右转'); });
+        rightBtn.addEventListener('mouseup', () => { w = 0; updateVelocityDisplay(); console.log('停止'); });
+        
+        stopBtn.addEventListener('click', () => {
+            vx = 0;
+            vy = 0;
+            w = 0;
+            updateVelocityDisplay();
+            console.log('急停');
+        });
+        
+        // 添加触摸和鼠标事件监听
+        knob.addEventListener('mousedown', handleStart);
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('mouseup', handleEnd);
+        
+        knob.addEventListener('touchstart', handleStart);
+        document.addEventListener('touchmove', handleMove);
+        document.addEventListener('touchend', handleEnd);
+        
+        // 模拟状态更新
+        function simulateStatusUpdates() {
+            // 模拟电池电压变化
+            const batteryValue = 12.6 + (Math.random() * 0.2 - 0.1);
+            batteryVoltage.textContent = batteryValue.toFixed(1) + 'V';
+            
+            // 模拟WiFi信号变化
+            const signalValue = -65 + Math.floor(Math.random() * 10 - 5);
+            wifiSignal.textContent = signalValue + 'dBm';
+            
+            // 模拟CPU使用率变化
+            const cpuValue = 35 + Math.floor(Math.random() * 10 - 5);
+            cpuUsage.textContent = cpuValue + '%';
+            
+            // 模拟障碍物距离变化
+            const distanceValue = 50 + Math.floor(Math.random() * 20 - 10);
+            obstacleDistance.textContent = distanceValue + 'cm';
+            
+            // 模拟运行时间增加
+            const currentTime = uptime.textContent.split(':');
+            let hours = parseInt(currentTime[0]);
+            let minutes = parseInt(currentTime[1]);
+            let seconds = parseInt(currentTime[2]);
+            
+            seconds++;
+            if (seconds >= 60) {
+                seconds = 0;
+                minutes++;
+                if (minutes >= 60) {
+                    minutes = 0;
+                    hours++;
+                }
+            }
+            
+            uptime.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 页面加载时初始化
+        window.addEventListener('load', () => {
+            // 初始化摇杆位置
+            centerX = joystick.clientWidth / 2;
+            centerY = joystick.clientHeight / 2;
+            maxDistance = joystick.clientWidth / 2 - knob.clientWidth / 2;
+            
+            // 设置摇杆初始位置
+            knob.style.left = centerX + 'px';
+            knob.style.top = centerY + 'px';
+            
+            // 定期更新状态（模拟）
+            setInterval(simulateStatusUpdates, 1000);
+        });
+        
+        // 窗口大小改变时重新计算摇杆参数
+        window.addEventListener('resize', () => {
+            centerX = joystick.clientWidth / 2;
+            centerY = joystick.clientHeight / 2;
+            maxDistance = joystick.clientWidth / 2 - knob.clientWidth / 2;
+            
+            knob.style.left = centerX + 'px';
+            knob.style.top = centerY + 'px';
+        });
+    </script>
+</body>
+</html> 

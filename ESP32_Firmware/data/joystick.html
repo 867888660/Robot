@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智能机器人控制面板</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            touch-action: none;
+            overscroll-behavior: none;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            background-color: #0078d7;
+            color: white;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 15px;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: white;
+            margin: 5px 8px;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+            font-size: 15px;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .joysticks-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .joystick-container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+        .joystick {
+            width: 150px;
+            height: 150px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+            border: 2px solid #ddd;
+            touch-action: none;
+        }
+        .joystick-label {
+            font-weight: bold;
+            margin: 10px 0;
+            color: #0078d7;
+            font-size: 15px;
+        }
+        .status-panel {
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .button-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .control-button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.2s;
+            touch-action: manipulation;
+        }
+        .control-button:hover {
+            background-color: #0056b3;
+        }
+        .control-button.stop {
+            background-color: #dc3545;
+            grid-column: span 2;
+        }
+        .control-button.stop:hover {
+            background-color: #c82333;
+        }
+        .velocity-display {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .velocity-value {
+            font-weight: bold;
+            color: #0078d7;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* Enhanced mobile styles */
+        @media (max-width: 768px) {
+            .joysticks-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .joystick {
+                width: 130px;
+                height: 130px;
+            }
+            
+            .status-panel h2, 
+            .status-panel h3,
+            .joystick-container h2 {
+                font-size: 18px;
+                margin: 10px 0;
+            }
+            
+            .joystick-container {
+                padding: 12px;
+            }
+            
+            .status-panel {
+                padding: 12px;
+            }
+            
+            .velocity-display {
+                margin-top: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+                margin: 10px 0;
+            }
+            
+            .joystick {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .control-button {
+                padding: 20px 10px;
+                font-size: 15px;
+            }
+            
+            .joystick-label {
+                font-size: 14px;
+                margin: 8px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>智能机器人控制面板</h1>
+            <div class="nav-links">
+                <a href="/index.html">WiFi配置</a>
+                <a href="/update">ESP32更新</a>
+                <a href="/ota_stm32">STM32更新</a>
+            </div>
+        </div>
+        <div class="control-panel">
+            <div class="joysticks-row">
+                <div class="joystick-container">
+                    <h2>移动控制</h2>
+                    <p class="joystick-label">左摇杆 - 控制前进/横向</p>
+                    <div id="left-joystick" class="joystick"></div>
+                    <div class="velocity-display">
+                        <div>前进速度: <span id="vx-value" class="velocity-value">0.00</span> m/s</div>
+                        <div>横向速度: <span id="vy-value" class="velocity-value">0.00</span> m/s</div>
+                    </div>
+                </div>
+                <div class="joystick-container">
+                    <h2>旋转控制</h2>
+                    <p class="joystick-label">右摇杆 - 控制旋转</p>
+                    <div id="right-joystick" class="joystick"></div>
+                    <div class="velocity-display">
+                        <div>旋转速度: <span id="w-value" class="velocity-value">0.00</span> rad/s</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-panel">
+                <h2>状态信息</h2>
+                <div class="status-item">
+                    <div>电池电压:</div>
+                    <div id="battery-voltage">12.6V</div>
+                </div>
+                <div class="status-item">
+                    <div>WiFi信号:</div>
+                    <div id="wifi-signal">-65dBm</div>
+                </div>
+                <div class="status-item">
+                    <div>CPU使用率:</div>
+                    <div id="cpu-usage">35%</div>
+                </div>
+                <div class="status-item">
+                    <div>运行状态:</div>
+                    <div id="run-status">正常</div>
+                </div>
+                <div class="status-item">
+                    <div>当前状态机状态:</div>
+                    <div id="fsm-state">1</div>
+                </div>
+                <div class="status-item">
+                    <div>障碍物距离:</div>
+                    <div id="obstacle-distance">无障碍物</div>
+                </div>
+                <h3>系统信息</h3>
+                <div class="status-item">
+                    <div>IP地址:</div>
+                    <div id="ip-address">192.168.1.100</div>
+                </div>
+                <div class="status-item">
+                    <div>固件版本:</div>
+                    <div id="firmware-version">v1.0</div>
+                </div>
+                <div class="status-item">
+                    <div>运行时间:</div>
+                    <div id="uptime">01:23:45</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© 2023 智能机器人系统 | 版本 1.0</p>
+        </div>
+    </div>
+    
+    <!-- 引入必要的JS文件 -->
+    <script src="js/nipple.min.js"></script>
+    
+    <script>
+        // 全局变量
+        let leftJoystick, rightJoystick;
+        let vx = 0, vy = 0, w = 0;
+        const maxSpeed = 0.5; // 最大线速度 m/s
+        const maxAngular = 1.0; // 最大角速度 rad/s
+        let websocket = null;
+        
+        // 初始化WebSocket连接
+        function initWebSocket() {
+            // 检查浏览器是否支持WebSocket
+            if ("WebSocket" in window) {
+                        // 构建WebSocket URL (使用相对路径，自动适应HTTP/HTTPS)
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${window.location.hostname}:81/ws`;
+                
+                try {
+                    // 创建新的WebSocket连接
+                    websocket = new WebSocket(wsUrl);
+                    
+                    // 连接打开时的处理
+                    websocket.onopen = function() {
+                        console.log("WebSocket连接已建立");
+                        document.getElementById('run-status').textContent = "已连接";
+                        // 请求系统信息
+                        requestSystemInfo();
+                    };
+                    
+                    // 接收消息的处理
+                    websocket.onmessage = function(evt) {
+                        const msg = evt.data;
+                        console.log("收到消息: " + msg);
+                        
+                        try {
+                            const data = JSON.parse(msg);
+                            updateSystemStatus(data);
+                        } catch (e) {
+                            console.error("无法解析JSON消息", e);
+                        }
+                    };
+                    
+                    // 连接关闭时的处理
+                    websocket.onclose = function() {
+                        console.log("WebSocket连接已关闭");
+                        document.getElementById('run-status').textContent = "未连接";
+                        // 尝试重新连接
+                        setTimeout(initWebSocket, 2000);
+                    };
+                    
+                    // 错误处理
+                    websocket.onerror = function(evt) {
+                        console.error("WebSocket错误:", evt);
+                        document.getElementById('run-status').textContent = "连接错误";
+                    };
+                    
+                } catch (e) {
+                    console.error("WebSocket连接失败:", e);
+                    document.getElementById('run-status').textContent = "连接失败";
+                }
+            } else {
+                console.error("您的浏览器不支持WebSocket");
+                document.getElementById('run-status').textContent = "不支持WebSocket";
+            }
+        }
+        
+        // 请求系统信息
+        function requestSystemInfo() {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify({
+                    cmd: "getSystemInfo"
+                }));
+            }
+        }
+        
+        // 更新系统状态信息
+        function updateSystemStatus(data) {
+            if (data.battery) {
+                document.getElementById('battery-voltage').textContent = data.battery + 'V';
+            }
+            
+            if (data.wifi) {
+                document.getElementById('wifi-signal').textContent = data.wifi + 'dBm';
+            }
+            
+            if (data.cpu) {
+                document.getElementById('cpu-usage').textContent = data.cpu + '%';
+            }
+            
+            if (data.fsm) {
+                document.getElementById('fsm-state').textContent = data.fsm;
+            }
+            
+            if (data.obstacle) {
+                document.getElementById('obstacle-distance').textContent = data.obstacle + 'cm';
+            }
+            
+            if (data.ip) {
+                document.getElementById('ip-address').textContent = data.ip;
+            }
+            
+            if (data.firmware) {
+                document.getElementById('firmware-version').textContent = data.firmware;
+            }
+            
+            if (data.uptime) {
+                document.getElementById('uptime').textContent = data.uptime;
+            }
+        }
+        
+        // 发送速度指令
+        function sendVelocity(vx, vy, w) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify({
+                    cmd: "velocity",
+                    vx: parseFloat(vx.toFixed(2)),
+                    vy: parseFloat(vy.toFixed(2)),
+                    w: parseFloat(w.toFixed(2))
+                }));
+            } else {
+                console.log(`模拟发送速度命令: vx=${vx.toFixed(2)}, vy=${vy.toFixed(2)}, w=${w.toFixed(2)}`);
+            }
+        }
+        
+        // 初始化nipplejs双摇杆
+        function initJoysticks() {
+            try {
+                // 左摇杆 - 控制前进/后退和左右移动
+                leftJoystick = nipplejs.create({
+                    zone: document.getElementById('left-joystick'),
+                    mode: 'static',
+                    position: { left: '50%', top: '50%' },
+                    color: '#0078d7',
+                    size: 120
+                });
+                
+                // 右摇杆 - 控制旋转
+                rightJoystick = nipplejs.create({
+                    zone: document.getElementById('right-joystick'),
+                    mode: 'static',
+                    position: { left: '50%', top: '50%' },
+                    color: '#0078d7',
+                    size: 120
+                });
+                
+                // 监听左摇杆事件
+                leftJoystick.on('move', function(evt, data) {
+                    // 计算前进/后退速度 (Y轴)
+                    vx = -data.vector.y * maxSpeed;
+                    // 计算左右移动速度 (X轴)
+                    vy = data.vector.x * maxSpeed;
+                    
+                    // 更新显示
+                    document.getElementById('vx-value').textContent = vx.toFixed(2);
+                    document.getElementById('vy-value').textContent = vy.toFixed(2);
+                    
+                    // 发送速度指令
+                    sendVelocity(vx, vy, w);
+                });
+                
+                // 左摇杆释放事件
+                leftJoystick.on('end', function() {
+                    // 停止移动
+                    vx = 0;
+                    vy = 0;
+                    document.getElementById('vx-value').textContent = '0.00';
+                    document.getElementById('vy-value').textContent = '0.00';
+                    
+                    // 发送速度指令
+                    sendVelocity(vx, vy, w);
+                });
+                
+                // 监听右摇杆事件
+                rightJoystick.on('move', function(evt, data) {
+                    // 计算旋转速度 (X轴)
+                    w = data.vector.x * maxAngular;
+                    
+                    // 更新显示
+                    document.getElementById('w-value').textContent = w.toFixed(2);
+                    
+                    // 发送速度指令
+                    sendVelocity(vx, vy, w);
+                });
+                
+                // 右摇杆释放事件
+                rightJoystick.on('end', function() {
+                    // 停止旋转
+                    w = 0;
+                    document.getElementById('w-value').textContent = '0.00';
+                    
+                    // 发送速度指令
+                    sendVelocity(vx, vy, w);
+                });
+                
+                console.log('双摇杆初始化成功');
+                
+            } catch(e) {
+                console.error('摇杆初始化失败:', e);
+                document.getElementById('run-status').textContent = "摇杆初始化失败";
+            }
+        }
+        
+        // 方向按钮控制
+        function setupButtonControls() {
+            const forwardBtn = document.getElementById('forward-btn');
+            const backwardBtn = document.getElementById('backward-btn');
+            const leftBtn = document.getElementById('left-btn');
+            const rightBtn = document.getElementById('right-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            
+            // 前进按钮
+            forwardBtn.addEventListener('mousedown', () => { 
+                vx = maxSpeed; 
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            forwardBtn.addEventListener('mouseup', () => { 
+                vx = 0; 
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 移动设备触摸支持
+            forwardBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                vx = maxSpeed;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            forwardBtn.addEventListener('touchend', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                vx = 0;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 后退按钮
+            backwardBtn.addEventListener('mousedown', () => { 
+                vx = -maxSpeed; 
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            backwardBtn.addEventListener('mouseup', () => { 
+                vx = 0; 
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 移动设备触摸支持
+            backwardBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                vx = -maxSpeed;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            backwardBtn.addEventListener('touchend', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                vx = 0;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 左转按钮
+            leftBtn.addEventListener('mousedown', () => { 
+                w = maxAngular; 
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            leftBtn.addEventListener('mouseup', () => { 
+                w = 0; 
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 移动设备触摸支持
+            leftBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                w = maxAngular;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            leftBtn.addEventListener('touchend', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                w = 0;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 右转按钮
+            rightBtn.addEventListener('mousedown', () => { 
+                w = -maxAngular; 
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            rightBtn.addEventListener('mouseup', () => { 
+                w = 0; 
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 移动设备触摸支持
+            rightBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                w = -maxAngular;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            rightBtn.addEventListener('touchend', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                w = 0;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 急停按钮
+            stopBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                vx = 0;
+                vy = 0;
+                w = 0;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+            
+            // 移动设备触摸支持
+            stopBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // 阻止默认行为
+                vx = 0;
+                vy = 0;
+                w = 0;
+                updateVelocityDisplay();
+                sendVelocity(vx, vy, w);
+            });
+        }
+        
+        // 更新速度显示
+        function updateVelocityDisplay() {
+            document.getElementById('vx-value').textContent = vx.toFixed(2);
+            document.getElementById('vy-value').textContent = vy.toFixed(2);
+            document.getElementById('w-value').textContent = w.toFixed(2);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            // 初始化WebSocket连接
+            initWebSocket();
+            
+            // 初始化双摇杆控制
+            initJoysticks();
+            
+            // 设置按钮控制
+            setupButtonControls();
+            
+            // 处理页面可见性变化
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    // 页面变为可见时，尝试重新连接WebSocket
+                    if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+                        initWebSocket();
+                    }
+                }
+            });
+            
+            // 防止页面滚动干扰摇杆操作
+            document.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+        });
+        
+        // 窗口大小改变时重新初始化摇杆
+        window.addEventListener('resize', () => {
+            // 销毁现有摇杆
+            if (leftJoystick) leftJoystick.destroy();
+            if (rightJoystick) rightJoystick.destroy();
+            
+            // 重新初始化摇杆
+            setTimeout(initJoysticks, 300); // 延迟以确保DOM已调整
+        });
+    </script>
+</body>
+</html> 

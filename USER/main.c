@@ -3,6 +3,9 @@
 #include "usart.h"
 #include "led.h"
 #include "fsm_control.h"
+#include "esp32_wifi.h"  // 添加ESP32 WiFi头文件
+#include "esp32_http.h"  // 添加ESP32 HTTP头文件
+#include "esp32_captive_dns.h"  // 添加ESP32 Captive DNS头文件
 
 /****************************************************************************
 智能小车主控引脚说明
@@ -28,6 +31,9 @@ TRIG:PB10         ECHO:PB11
 RGB灯带
 DI:PB0
 
+ESP32 WiFi模块
+TX->PA2(USART2_RX)  RX->PA3(USART2_TX)
+
 ************************************************************************************/
 
 // 系统滴答计数器，用于时间戳
@@ -35,6 +41,12 @@ volatile u32 g_systick_ms = 0;
 
 // 传感器数据更新标志
 static u8 g_update_sensors_flag = 0;
+
+// ESP32 WiFi配置标志
+static u8 g_wifi_config_flag = 0;
+
+// 控制面板状态更新标志
+static u8 g_control_status_flag = 0;
 
 // SysTick中断处理函数
 void SysTick_Handler(void)
@@ -44,6 +56,16 @@ void SysTick_Handler(void)
     // 每50ms更新一次传感器数据
     if(g_systick_ms % 50 == 0) {
         g_update_sensors_flag = 1;
+    }
+    
+    // 每5秒检查一次WiFi状态
+    if(g_systick_ms % 5000 == 0) {
+        g_wifi_config_flag = 1;
+    }
+    
+    // 每1秒更新一次控制面板状态
+    if(g_systick_ms % 1000 == 0) {
+        g_control_status_flag = 1;
     }
 }
 
@@ -61,6 +83,9 @@ void SystemInit(void)
     
     // 初始化串口
     USART1_Init(115200);
+    
+    // 初始化ESP32 WiFi通信
+    ESP32_WiFi_Init(115200);
     
     // 初始化电机
     Motor_Init();
@@ -105,6 +130,9 @@ int main(void)
     // 加载默认规则
     FSM_LoadDefaultRules();
     
+    // 初始化ESP32 Captive DNS服务器
+    ESP32_CaptiveDNS_Init();
+    
     printf("Robot started in state %d\r\n", FSM_GetCurrentState());
     
     // 主循环
@@ -121,6 +149,26 @@ int main(void)
         
         // 发送心跳（状态机内部会控制发送频率）
         FSM_SendHeartbeat();
+        
+        // 处理ESP32 WiFi通信
+        ESP32_WiFi_Process();
+        
+        // 定期检查WiFi状态
+        if(g_wifi_config_flag) {
+            ESP32_HTTP_GetStatus();
+            g_wifi_config_flag = 0;
+        }
+        
+        // 定期更新控制面板状态
+        if(g_control_status_flag && g_esp32_wifi.status == WIFI_STATUS_CONNECTED) {
+            // 发送系统状态到控制面板
+            char status_cmd[128];
+            sprintf(status_cmd, "STATUS:{\"battery\":%.1f,\"wifi_rssi\":%d,\"cpu\":%d,\"state\":%d,\"distance\":%.1f}",
+                   12.6, -65, 35, FSM_GetCurrentState(), Hcsr04_GetDistance());
+            ESP32_WiFi_SendCommand(status_cmd);
+            
+            g_control_status_flag = 0;
+        }
         
         // 延时一小段时间，避免过于频繁的更新
         delay_ms(10);

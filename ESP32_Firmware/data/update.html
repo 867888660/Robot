@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>固件升级</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            background-color: #0078d7;
+            color: white;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 15px;
+        }
+        .upload-container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .form-group button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            touch-action: manipulation;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .form-group button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress {
+            height: 100%;
+            background-color: #0078d7;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+            font-size: 16px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .status.info {
+            background-color: #e2f3fd;
+            color: #0c5460;
+            display: block;
+        }
+        .system-info {
+            margin-top: 15px;
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            font-size: 12px;
+        }
+        .nav-button {
+            display: inline-block;
+            padding: 12px 16px;
+            background-color: #0078d7;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px;
+            min-width: 100px;
+            text-align: center;
+            touch-action: manipulation;
+            font-size: 16px;
+        }
+        .nav-button:hover {
+            background-color: #0056b3;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: white;
+            margin: 5px 8px;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+            font-size: 15px;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+                margin: 10px 0;
+            }
+            
+            .nav-links {
+                gap: 5px;
+            }
+            
+            .nav-links a {
+                margin: 3px 5px;
+                padding: 8px 10px;
+            }
+            
+            .system-info h2, 
+            .upload-container h2 {
+                font-size: 20px;
+                margin: 10px 0;
+            }
+            
+            .nav-button {
+                display: block;
+                width: 100%;
+                margin: 8px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ESP32固件升级</h1>
+            <div class="nav-links">
+                <a href="/index.html">WiFi配置</a>
+                <a href="/joystick.html">控制面板</a>
+                <a href="/ota_stm32">STM32更新</a>
+            </div>
+        </div>
+        <div class="upload-container">
+            <h2>上传新固件</h2>
+            <p>请选择固件文件(.bin)进行上传。上传完成后设备将自动重启并应用新固件。</p>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="firmware">固件文件:</label>
+                    <input type="file" id="firmware" name="firmware" accept=".bin" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" id="uploadBtn">上传并升级</button>
+                </div>
+            </form>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+                <div id="progressText">0%</div>
+            </div>
+            <div id="statusMessage" class="status"></div>
+        </div>
+        <div class="system-info">
+            <h2>系统信息</h2>
+            <div class="info-item">
+                <div>当前固件版本:</div>
+                <div id="currentVersion">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div>设备型号:</div>
+                <div id="deviceModel">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div>可用存储空间:</div>
+                <div id="availableSpace">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div>MAC地址:</div>
+                <div id="macAddress">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div>上次升级时间:</div>
+                <div id="lastUpdateTime">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div>运行时间:</div>
+                <div id="uptime">加载中...</div>
+            </div>
+            <div class="info-item">
+                <div>WiFi信号强度:</div>
+                <div id="rssi">加载中...</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="/joystick.html" class="nav-button">控制面板</a>
+                <a href="/index.html" class="nav-button">WiFi配置</a>
+                <a href="/ota_stm32" class="nav-button">STM32固件升级</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© 2023 智能机器人系统 | 版本 <span id="footerVersion">1.0.0</span></p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadForm = document.getElementById('uploadForm');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const statusMessage = document.getElementById('statusMessage');
+            const firmwareInput = document.getElementById('firmware');
+            
+            // 获取系统信息
+            function loadSystemInfo() {
+                fetch('/system-info')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('currentVersion').textContent = data.version || '未知';
+                        document.getElementById('deviceModel').textContent = data.model || '未知';
+                        document.getElementById('availableSpace').textContent = data.available_space || '未知';
+                        document.getElementById('macAddress').textContent = data.mac || '未知';
+                        document.getElementById('lastUpdateTime').textContent = data.last_update || '从未升级';
+                        document.getElementById('uptime').textContent = data.uptime || '未知';
+                        document.getElementById('rssi').textContent = data.rssi ? data.rssi + ' dBm' : '未知';
+                        document.getElementById('footerVersion').textContent = data.version || '1.0.0';
+                    })
+                    .catch(error => {
+                        console.error('获取系统信息失败:', error);
+                    });
+            }
+            
+            // 页面加载时获取系统信息
+            loadSystemInfo();
+            
+            // 每30秒刷新一次系统信息
+            setInterval(loadSystemInfo, 30000);
+            
+            // 文件选择验证
+            firmwareInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    // 验证文件类型
+                    if (!file.name.endsWith('.bin')) {
+                        showStatus('请选择有效的.bin固件文件', 'error');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // 验证文件大小
+                    const maxSize = 1.5 * 1024 * 1024; // 1.5MB
+                    if (file.size > maxSize) {
+                        showStatus(`文件过大，最大允许1.5MB，当前${(file.size / (1024 * 1024)).toFixed(2)}MB`, 'error');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    showStatus(`已选择: ${file.name} (${(file.size / 1024).toFixed(2)}KB)`, 'info');
+                }
+            });
+            
+            // 表单提交
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const file = firmwareInput.files[0];
+                if (!file) {
+                    showStatus('请选择固件文件', 'error');
+                    return;
+                }
+                
+                // 准备上传
+                uploadBtn.disabled = true;
+                progressContainer.style.display = 'block';
+                showStatus('正在上传固件，请勿断开电源或关闭页面...', 'info');
+                
+                const xhr = new XMLHttpRequest();
+                const formData = new FormData();
+                formData.append('firmware', file);
+                
+                // 监听上传进度
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                        progressText.textContent = Math.round(percentComplete) + '%';
+                    }
+                });
+                
+                // 上传完成
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        showStatus('固件上传成功！设备正在重启并应用新固件，请等待约30秒...', 'success');
+                        
+                        // 倒计时
+                        let countdown = 30;
+                        const countdownInterval = setInterval(function() {
+                            countdown--;
+                            showStatus(`固件上传成功！设备正在重启并应用新固件，请等待${countdown}秒...`, 'success');
+                            
+                            if (countdown <= 0) {
+                                clearInterval(countdownInterval);
+                                window.location.reload();
+                            }
+                        }, 1000);
+                    } else {
+                        uploadBtn.disabled = false;
+                        showStatus('上传失败: ' + xhr.statusText, 'error');
+                    }
+                };
+                
+                // 上传错误
+                xhr.onerror = function() {
+                    uploadBtn.disabled = false;
+                    showStatus('上传过程中发生网络错误', 'error');
+                };
+                
+                // 发送请求
+                xhr.open('POST', '/update', true);
+                xhr.send(formData);
+            });
+            
+            // 显示状态消息
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status ' + type;
+            }
+        });
+    </script>
+</body>
+</html> 

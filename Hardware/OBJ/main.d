@@ -1,46 +1,29 @@
-..\obj\main.o: main.c
-..\obj\main.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdio.h
-..\obj\main.o: ..\SYSTEM\sys\sys.h
-..\obj\main.o: ..\USER\stm32f10x.h
-..\obj\main.o: ..\CORE\core_cm3.h
-..\obj\main.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdint.h
-..\obj\main.o: ..\USER\system_stm32f10x.h
-..\obj\main.o: ..\USER\stm32f10x_conf.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_adc.h
-..\obj\main.o: ..\USER\stm32f10x.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_bkp.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_can.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_cec.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_crc.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_dac.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_dbgmcu.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_dma.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_exti.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_flash.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_fsmc.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_gpio.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_i2c.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_iwdg.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_pwr.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_rcc.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_rtc.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_sdio.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_spi.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_tim.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_usart.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\stm32f10x_wwdg.h
-..\obj\main.o: ..\STM32F10x_FWLib\inc\misc.h
-..\obj\main.o: ..\SYSTEM\delay\delay.h
-..\obj\main.o: ..\SYSTEM\usart\usart.h
-..\obj\main.o: ..\APP\Control\control.h
-..\obj\main.o: ..\APP\Motor\motor.h
-..\obj\main.o: ..\APP\NRF24L01\nrf24l01.h
-..\obj\main.o: ..\HARDWARE\LED\led.h
-..\obj\main.o: ..\APP\HCSR04\hcsr.h
-..\obj\main.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdlib.h
-..\obj\main.o: ..\APP\TCRT5000\tcrt.h
-..\obj\main.o: ..\HARDWARE\ADC\adc.h
-..\obj\main.o: ..\APP\JoyStick\joystick.h
-..\obj\main.o: D:\MDK\ARM\ARMCC\Bin\..\include\math.h
-..\obj\main.o: D:\MDK\ARM\ARMCC\Bin\..\include\string.h
-..\obj\main.o: ..\APP\WS2812B\ws2812b.h
+../obj/main.o: main.c ..\SYSTEM\sys\sys.h ..\USER\stm32f10x.h \
+  ..\CORE\core_cm3.h ..\USER\system_stm32f10x.h ..\USER\stm32f10x_conf.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_adc.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_bkp.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_can.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_cec.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_crc.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_dac.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_dbgmcu.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_dma.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_exti.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_flash.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_fsmc.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_gpio.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_i2c.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_iwdg.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_pwr.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_rcc.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_rtc.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_sdio.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_spi.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_tim.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_usart.h \
+  ..\STM32F10x_FWLib\inc\stm32f10x_wwdg.h ..\STM32F10x_FWLib\inc\misc.h \
+  ..\SYSTEM\delay\delay.h ..\SYSTEM\usart\usart.h \
+  ..\APP\Control\control.h ..\APP\Motor\motor.h \
+  ..\APP\NRF24L01\nrf24l01.h ..\HARDWARE\LED\led.h ..\APP\HCSR04\hcsr.h \
+  ..\APP\TCRT5000\tcrt.h ..\HARDWARE\ADC\adc.h \
+  ..\APP\JoyStick\joystick.h ..\APP\WS2812B\ws2812b.h

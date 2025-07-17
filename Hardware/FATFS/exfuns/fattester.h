@@ -3,15 +3,15 @@
 #include <stm32f10x.h>	   
 #include "ff.h"
 //////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEKÕ½½¢STM32¿ª·¢°åV3
-//FATFS ²âÊÔ´úÂë	   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//´´½¨ÈÕÆÚ:2015/1/20
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾ 2014-2024
+//æœ¬ç¨‹åºåªä¾›å­¦ä¹ ä½¿ç”¨ï¼Œæœªç»ä½œè€…è®¸å¯ï¼Œä¸å¾—ç”¨äºå…¶å®ƒä»»ä½•ç”¨é€”
+//ALIENTEKæˆ˜èˆ°STM32å¼€å‘æ¿V3
+//FATFS æµ‹è¯•ä»£ç 	   
+//æ­£ç‚¹åŸå­@ALIENTEK
+//æŠ€æœ¯è®ºå›:www.openedv.com
+//åˆ›å»ºæ—¥æœŸ:2015/1/20
+//ç‰ˆæœ¬ï¼šV1.0
+//ç‰ˆæƒæ‰€æœ‰ï¼Œç›—ç‰ˆå¿…ç©¶ã€‚
+//Copyright(C) å¹¿å·å¸‚æ˜Ÿç¿¼ç”µå­ç§‘æŠ€æœ‰é™å…¬å¸ 2014-2024
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 	
  
@@ -26,7 +26,7 @@ u8 mf_readdir(void);
 u8 mf_scan_files(u8 * path);
 u32 mf_showfree(u8 *drv);
 u8 mf_lseek(u32 offset);
-u32 mf_tell(void);
+u8 mf_tell(void);
 u32 mf_size(void);
 u8 mf_mkdir(u8*pname);
 u8 mf_fmkfs(u8* path,u8 mode,u16 au);
@@ -37,7 +37,11 @@ void mf_setlabel(u8 *path);
 void mf_gets(u16 size);
 u8 mf_putc(u8 c);
 u8 mf_puts(u8*c);
- 
+
+// ESP32 WiFié…ç½®æ–‡ä»¶å‡½æ•°
+u8 ESP32_WiFi_SaveConfig(const char* ssid, const char* password);
+u8 ESP32_WiFi_ReadConfig(char* ssid, char* password);
+
 #endif
 
 

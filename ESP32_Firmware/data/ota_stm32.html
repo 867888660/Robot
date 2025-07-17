@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STM32固件升级</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            background-color: #0078d7;
+            color: white;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 15px;
+        }
+        .upload-container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .form-group button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            touch-action: manipulation;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .form-group button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            height: 24px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress {
+            height: 100%;
+            background-color: #0078d7;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+            font-size: 16px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .status.info {
+            background-color: #e2f3fd;
+            color: #0c5460;
+            display: block;
+        }
+        .steps {
+            margin-top: 15px;
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .step {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+        }
+        .step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background-color: #0078d7;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex-grow: 1;
+        }
+        .step-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        .step-content p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .nav-button {
+            display: block;
+            padding: 12px 16px;
+            background-color: #0078d7;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 8px 0;
+            text-align: center;
+            touch-action: manipulation;
+            font-size: 16px;
+        }
+        .nav-button:hover {
+            background-color: #0056b3;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: white;
+            margin: 5px 8px;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+            font-size: 15px;
+        }
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* Enhanced mobile styles */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+                margin: 10px 0;
+            }
+            
+            .upload-container h2,
+            .steps h2 {
+                font-size: 20px;
+                margin: 10px 0;
+            }
+            
+            .step-number {
+                width: 25px;
+                height: 25px;
+                margin-right: 10px;
+            }
+            
+            .step {
+                margin-bottom: 12px;
+                padding-bottom: 12px;
+            }
+            
+            .step-content h3 {
+                font-size: 15px;
+            }
+            
+            .step-content p {
+                font-size: 13px;
+            }
+            
+            .form-group button {
+                padding: 15px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>STM32固件升级</h1>
+            <div class="nav-links">
+                <a href="/index.html">WiFi配置</a>
+                <a href="/joystick.html">控制面板</a>
+                <a href="/update">ESP32更新</a>
+            </div>
+        </div>
+        <div class="upload-container">
+            <h2>上传STM32固件</h2>
+            <p>请选择STM32固件文件(.bin)进行上传。上传后点击烧录按钮将固件写入STM32芯片。</p>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="firmware">固件文件:</label>
+                    <input type="file" id="firmware" name="firmware" accept=".bin" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" id="uploadBtn">上传固件</button>
+                </div>
+            </form>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+                <div id="progressText">0%</div>
+            </div>
+            <div id="statusMessage" class="status"></div>
+            <div class="form-group" style="margin-top: 20px; display: none;" id="flashContainer">
+                <button type="button" id="flashBtn">烧录到STM32</button>
+            </div>
+        </div>
+        
+        <div class="steps">
+            <h2>STM32固件升级步骤</h2>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>选择固件文件</h3>
+                    <p>点击"选择文件"按钮，选择一个有效的.bin格式STM32固件文件。</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>上传固件</h3>
+                    <p>点击"上传固件"按钮，将固件文件上传到ESP32。</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>烧录固件</h3>
+                    <p>固件上传完成后，点击"烧录到STM32"按钮开始烧录过程。请确保STM32与ESP32连接正确。</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>等待完成</h3>
+                    <p>烧录过程可能需要几分钟时间。请确保在此期间不要断开电源或重启设备。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <a href="/joystick.html" class="nav-button">控制面板</a>
+            <a href="/index.html" class="nav-button">WiFi配置</a>
+            <a href="/update" class="nav-button">ESP32固件升级</a>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 智能机器人系统 | 版本 <span id="footerVersion">1.0.0</span></p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadForm = document.getElementById('uploadForm');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const flashBtn = document.getElementById('flashBtn');
+            const flashContainer = document.getElementById('flashContainer');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const statusMessage = document.getElementById('statusMessage');
+            const firmwareInput = document.getElementById('firmware');
+            
+            // 获取系统信息
+            fetch('/system-info')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('footerVersion').textContent = data.version || '1.0.0';
+                })
+                .catch(error => {
+                    console.error('获取系统信息失败:', error);
+                });
+            
+            // 文件选择验证
+            firmwareInput.addEventListener('change', function() {
+                const file = this.files[0];
+                flashContainer.style.display = 'none';
+                
+                if (file) {
+                    // 验证文件类型
+                    if (!file.name.endsWith('.bin')) {
+                        showStatus('请选择有效的.bin固件文件', 'error');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // 验证文件大小（STM32固件通常小于512KB）
+                    const maxSize = 512 * 1024;
+                    if (file.size > maxSize) {
+                        showStatus(`文件过大，最大允许512KB，当前${(file.size / 1024).toFixed(2)}KB`, 'error');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    showStatus(`已选择: ${file.name} (${(file.size / 1024).toFixed(2)}KB)`, 'info');
+                }
+            });
+            
+            // 表单提交（上传固件）
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const file = firmwareInput.files[0];
+                if (!file) {
+                    showStatus('请选择固件文件', 'error');
+                    return;
+                }
+                
+                // 准备上传
+                uploadBtn.disabled = true;
+                progressContainer.style.display = 'block';
+                showStatus('正在上传固件，请稍候...', 'info');
+                
+                const xhr = new XMLHttpRequest();
+                const formData = new FormData();
+                formData.append('firmware', file);
+                
+                // 监听上传进度
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                        progressText.textContent = Math.round(percentComplete) + '%';
+                    }
+                });
+                
+                // 上传完成
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.size) {
+                                showStatus(`固件上传成功! 大小: ${(response.size / 1024).toFixed(2)}KB`, 'success');
+                                // 显示烧录按钮
+                                flashContainer.style.display = 'block';
+                            } else {
+                                showStatus('上传成功，但未收到正确的响应', 'error');
+                                uploadBtn.disabled = false;
+                            }
+                        } catch (e) {
+                            showStatus('解析响应失败', 'error');
+                            uploadBtn.disabled = false;
+                        }
+                    } else {
+                        showStatus('上传失败: ' + xhr.statusText, 'error');
+                        uploadBtn.disabled = false;
+                    }
+                };
+                
+                // 上传错误
+                xhr.onerror = function() {
+                    uploadBtn.disabled = false;
+                    showStatus('上传过程中发生网络错误', 'error');
+                };
+                
+                // 发送请求
+                xhr.open('POST', '/upload_stm32_firmware', true);
+                xhr.send(formData);
+            });
+            
+            // 烧录按钮事件
+            flashBtn.addEventListener('click', function() {
+                flashBtn.disabled = true;
+                showStatus('正在将固件烧录到STM32，请勿断开电源或重启设备...', 'info');
+                
+                fetch('/flash_stm32', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        showStatus('固件烧录成功！STM32正在重启...', 'success');
+                        
+                        // 3秒后启用按钮
+                        setTimeout(function() {
+                            uploadBtn.disabled = false;
+                            flashBtn.disabled = false;
+                            flashContainer.style.display = 'none';
+                        }, 3000);
+                    } else {
+                        showStatus('烧录失败: ' + data.status, 'error');
+                        flashBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('烧录请求失败:', error);
+                    showStatus('烧录请求失败，请检查设备连接', 'error');
+                    flashBtn.disabled = false;
+                });
+            });
+            
+            // 显示状态消息
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status ' + type;
+            }
+        });
+    </script>
+</body>
+</html> 
